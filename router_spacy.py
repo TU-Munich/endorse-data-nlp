@@ -1,8 +1,8 @@
-from flask import Flask, Blueprint, request, jsonify
-import spacy
 import time
-from elasticsearch import Elasticsearch
 import uuid
+import spacy
+from flask import Flask, Blueprint, request, jsonify
+from elasticsearch import Elasticsearch
 
 es = Elasticsearch()
 
@@ -50,24 +50,45 @@ def doc_ner(doc):
     return ner
 
 
-def handle_sentence(sentence, debug=False):
+def doc_sentences(doc):
+    """
+    Take a spacy doc object
+    split the document into sentences
+    """
+    sentences = []
+    for sent in doc.sents:
+        sentences.append(sent.text)
+    return sentences
+
+
+def handle_document(document, debug=False):
+    """
+    Take a sentence and use the spacy classifier
+    to execute the following tasks
+    * POS
+    * NER
+    """
     # spacy classify document
-    doc = nlp(sentence)
+    doc = nlp(document)
     # init result dict
     result = dict()
     # add input sentence
-    result["input"] = sentence
+    result["input"] = document
     # add unix timestamp
-    result["timestamp"] = time.time(),
+    result["timestamp"] = time.time()
+    # Sentence Segmentation
+    result["sentences"] = doc_sentences(doc)
     # Part of Speech tagging
     result['pos'] = doc_pos(doc)
     # Named entity recognition
     result['ner'] = doc_ner(doc)
     # Save in database if its not debugged
     if debug:
+        # return result
         print(result)
         res = result
     else:
+        # return if object was created
         res = es.index(index="test-index", doc_type='sentence', id=uuid.uuid1(), body=result)
 
     return res
@@ -79,6 +100,6 @@ def parse_text():
     debug = request.args.get('debug', default=False)
     sentence = request.args.get('sentence')
     # handle sentence
-    result = handle_sentence(sentence, debug)
+    result = handle_document(sentence, debug)
     # return json result
     return jsonify(result)
