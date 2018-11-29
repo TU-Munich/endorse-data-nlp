@@ -10,9 +10,9 @@ from services.spacy_service import doc_spacy, doc_ner, doc_pos, doc_tokenize, do
 
 es = Elasticsearch()
 
-api = Namespace('spacy', description='use all functionality of spacy')
+api = Namespace('NLP', description='All functionalities of the natural language processing service')
 
-resource_fields = api.model('Spacy Request', {
+resource_fields = api.model('Request', {
     'document': fields.String(min=1),
 })
 parser = reqparse.RequestParser()
@@ -37,7 +37,7 @@ class Pipeline(Resource):
         return jsonify(result)
 
 
-def preprocess_doc(document):
+def pre_process_doc(document):
     # handle document
     # classify language
     lang = doc_lang(document)
@@ -60,7 +60,7 @@ class NER(Resource):
         result = dict()
         result["input"] = document
         # pre process doc
-        doc = preprocess_doc(document)
+        doc = pre_process_doc(document)
         # get NER
         output = doc_ner(doc)
         # return result
@@ -81,7 +81,7 @@ class POS(Resource):
         result = dict()
         result["input"] = document
         # pre process doc
-        doc = preprocess_doc(document)
+        doc = pre_process_doc(document)
         # get POS
         output = doc_pos(doc)
         # return result
@@ -102,7 +102,7 @@ class Tokenize(Resource):
         result = dict()
         result["input"] = document
         # pre process doc
-        doc = preprocess_doc(document)
+        doc = pre_process_doc(document)
         # get tokenzied document
         output = doc_tokenize(doc)
         # return result
