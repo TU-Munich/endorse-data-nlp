@@ -1,7 +1,7 @@
 import time
 
 from services.langdetec_service import doc_lang
-from services.spacy_service import doc_pre_process, doc_spacy, doc_tokenize, doc_pos, doc_ner
+from services.spacy_service import doc_clean, doc_spacy, doc_tokenize, doc_pos, doc_ner
 
 
 def handle_document(document):
@@ -20,7 +20,7 @@ def handle_document(document):
     # add unix timestamp
     result["timestamp"] = time.time()
     # clean the document
-    clean = doc_pre_process(document)
+    clean = doc_clean(document)
     # detect langs
     result["lang"] = doc_lang(clean)
     # spacy classify document

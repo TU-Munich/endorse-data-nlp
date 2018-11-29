@@ -6,7 +6,7 @@ from flask_restplus import Namespace, Resource, fields, reqparse
 
 from services.langdetec_service import doc_lang
 from services.pipeline_service import handle_document
-from services.spacy_service import doc_spacy, doc_ner, doc_pos, doc_tokenize
+from services.spacy_service import doc_spacy, doc_ner, doc_pos, doc_tokenize, doc_clean
 
 es = Elasticsearch()
 
@@ -37,6 +37,16 @@ class Pipeline(Resource):
         return jsonify(result)
 
 
+def preprocess_doc(document):
+    # handle document
+    # classify language
+    lang = doc_lang(document)
+    cleaned = doc_clean(document)
+    # spacy, pos, tok ...
+    doc = doc_spacy(lang, cleaned)
+    return doc
+
+
 @api.route('/ner')
 class NER(Resource):
     @api.doc('Named Entity Recognition')
@@ -49,11 +59,8 @@ class NER(Resource):
         # init result dict
         result = dict()
         result["input"] = document
-        # handle document
-        # classify langauge
-        lang = doc_lang(document)
-        # spacy, pos, tok ...
-        doc = doc_spacy(lang, document)
+        # pre process doc
+        doc = preprocess_doc(document)
         # get NER
         output = doc_ner(doc)
         # return result
@@ -73,11 +80,8 @@ class POS(Resource):
         # init result dict
         result = dict()
         result["input"] = document
-        # handle document
-        # classify language
-        lang = doc_lang(document)
-        # spacy, pos, tok ...
-        doc = doc_spacy(lang, document)
+        # pre process doc
+        doc = preprocess_doc(document)
         # get POS
         output = doc_pos(doc)
         # return result
@@ -97,13 +101,27 @@ class Tokenize(Resource):
         # init result dict
         result = dict()
         result["input"] = document
-        # handle document
-        # classify language
-        lang = doc_lang(document)
-        # spacy, pos, tok ...
-        doc = doc_spacy(lang, document)
+        # pre process doc
+        doc = preprocess_doc(document)
         # get tokenzied document
         output = doc_tokenize(doc)
         # return result
         result["output"] = output
+        return jsonify(result)
+
+
+@api.route('/lang')
+class Language(Resource):
+    @api.doc('Detect language')
+    @api.expect(resource_fields)
+    def post(self):
+        # parse arguments
+        req = request.get_json(silent=True)
+        # get document
+        document = req['document']
+        # init result dict
+        result = dict()
+        result["input"] = document
+        # return result
+        result["output"] = doc_lang(document)
         return jsonify(result)

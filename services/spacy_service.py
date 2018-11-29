@@ -4,7 +4,7 @@ nlp_en = spacy.load('en')
 nlp_de = spacy.load('de')
 
 
-def doc_pre_process(raw):
+def doc_clean(raw):
     clean = raw.strip(' \t\n\r')
     return clean
 
