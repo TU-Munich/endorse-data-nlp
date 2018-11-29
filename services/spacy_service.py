@@ -1,7 +1,4 @@
-import time
-from langdetect import detect
-import spacy
-from langdetect import detect, detect_langs
+from textacy.io import spacy
 
 nlp_en = spacy.load('en')
 nlp_de = spacy.load('de')
@@ -51,7 +48,7 @@ def doc_ner(doc):
     return ner
 
 
-def doc_sentences(doc):
+def doc_tokenize(doc):
     """
     Take a spacy doc object
     split the document into sentences
@@ -62,40 +59,8 @@ def doc_sentences(doc):
     return sentences
 
 
-def handle_document(document):
-    """
-    Take a document and classify the language of the document
-    with the google lang classifier
-    Take a document and use the spacy classifier
-    to execute the following tasks
-    * POS
-    * NER
-    """
-    # init result dict
-    result = dict()
-    clean = doc_pre_process(document)
-    # classify language
-    result["lang"] = detect(clean)
-    # spacy classify document
-    if result["lang"] == "de":
-        doc = nlp_de(clean)
+def doc_spacy(lang, clean):
+    if lang == "de":
+        return nlp_de(clean)
     else:
-        doc = nlp_en(clean)
-    # detect langs
-    result["lang"] = detect(doc.text)
-    # the raw document
-    result["raw"] = document
-
-    # result["langs"] = detect_langs(doc.text)
-    # add input sentence
-    result["input"] = document
-    # add unix timestamp
-    result["timestamp"] = time.time()
-    # Sentence Segmentation
-    result["sentences"] = doc_sentences(doc)
-    # Part of Speech tagging
-    result['pos'] = doc_pos(doc)
-    # Named entity recognition
-    result['ner'] = doc_ner(doc)
-
-    return result
+        return nlp_en(clean)
