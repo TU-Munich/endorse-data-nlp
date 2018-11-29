@@ -10,4 +10,4 @@ api = Api(blueprint,
           # All API metadatas
           )
 
-api.add_namespace(spacy_api)
+api.add_namespace(spacy_api, path="/spacy")
