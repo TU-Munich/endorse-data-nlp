@@ -1,4 +1,4 @@
-from textacy.io import spacy
+import spacy
 
 nlp_en = spacy.load('en')
 nlp_de = spacy.load('de')

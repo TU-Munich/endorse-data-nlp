@@ -12,7 +12,7 @@ es = Elasticsearch()
 
 api = Namespace('NLP', description='All functionalities of the natural language processing service')
 
-resource_fields = api.model('Request', {
+resource_fields = api.model('NLP Document Request', {
     'document': fields.String(min=1),
 })
 parser = reqparse.RequestParser()
@@ -21,8 +21,14 @@ parser.add_argument('debug', type=bool, help='Get the response of the nlp conten
 
 @api.route('/')
 class Pipeline(Resource):
+    def get(self):
+        result = {
+            "api": "pipeline"
+        }
+        return jsonify(result)
+
     @api.doc('Pipeline')
-    @api.expect(body=resource_fields, header=parser)
+    @api.expect(resource_fields)
     def post(self):
         req = request.get_json(silent=True)
         # parse arguments
