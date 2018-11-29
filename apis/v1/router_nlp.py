@@ -62,7 +62,7 @@ class NER(Resource):
 
 
 @api.route('/pos')
-class NER(Resource):
+class POS(Resource):
     @api.doc('Part of speech tagging')
     @api.expect(resource_fields)
     def post(self):
@@ -86,7 +86,7 @@ class NER(Resource):
 
 
 @api.route('/tokenize')
-class NER(Resource):
+class Tokenize(Resource):
     @api.doc('Tokenize document')
     @api.expect(resource_fields)
     def post(self):
