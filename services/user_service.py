@@ -1,7 +1,33 @@
 import re
+import hashlib, binascii
+
+from elasticsearch import Elasticsearch
+
+es = Elasticsearch()
+
+PEPPER = "EN214$öüoij:;:uiztR§%$"
 
 
-def password_check(password):
+def user_hash_password(password: str, pepper: str, salt: str):
+    """
+    hash the password pepper and salt
+    :param password:
+    :param pepper:
+    :param salt:
+    :return:
+    """
+    # conact the pepper and password
+    concat_password = pepper + password
+    # convert password string to binary
+    bin_password = bin(int(binascii.hexlify(concat_password), 16))
+    # convert salt string to binary
+    bin_salt = bin(int(binascii.hexlify(salt), 16))
+    # hash the pw and salt
+    dk = hashlib.pbkdf2_hmac('sha256', bin_password, bin_salt, 100000)
+    return binascii.hexlify(dk)
+
+
+def user_password_check(password):
     """
     Verify the strength of 'password'
     Returns a dict indicating the wrong criteria
@@ -11,6 +37,8 @@ def password_check(password):
         1 symbol or more
         1 uppercase letter or more
         1 lowercase letter or more
+    :param password: the password
+    :return: the check object
     """
 
     # calculating the length
@@ -41,17 +69,25 @@ def password_check(password):
     }
 
 
-def create_user(user_name: str, password: str):
+def user_exists(user_name: str):
+    return es.exists(index="users", doc_type='user', id=user_name)
+
+
+def user_create(user_name: str, password: str):
+    doc = {
+        user_name: user_name,
+        password: user_hash_password(password, PEPPER)
+    }
     pass
 
 
-def delete_user(user_name: str):
+def user_delete(user_name: str):
     pass
 
 
-def update_user(user_name_old: str, user_name_new: str):
+def user_update(user_name_old: str, user_name_new: str):
     pass
 
 
-def update_user_password(password_old: str, password_new: str):
+def user_update_password(password_old: str, password_new: str):
     pass
