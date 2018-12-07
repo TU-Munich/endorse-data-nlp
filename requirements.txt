@@ -1,0 +1,8 @@
+elasticsearch==6.3.1
+flask_restplus==0.12.1
+gevent==1.2.2
+tika==1.19
+langdetect==1.0.7
+spacy==2.0.16
+Werkzeug==0.12.2
+Flask==0.12.2

@@ -15,3 +15,7 @@ http://127.0.0.1:5000/api/1/api/v1/
 
 ## Authors
 * Sebastian Erhardt
+
+## Credentials
+
+[Go to credentials](./CREDENTIALS.md)
