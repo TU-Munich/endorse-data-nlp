@@ -16,6 +16,14 @@ http://127.0.0.1:5000/api/1/api/v1/
 ## Authors
 * Sebastian Erhardt
 
+## Environment variables
+
+```
+ELASTIC_SERACH_HOST=XXX
+ELASTIC_SERACH_USERNAME=XXX
+ELASTIC_SERACH_PASSWORD=XXX
+```
+
 ## Credentials
 
 [Go to credentials](./CREDENTIALS.md)
