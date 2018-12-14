@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Flask, request, jsonify
 from flask_restplus import Namespace, Resource, fields, reqparse
 from elasticsearch import Elasticsearch
@@ -36,28 +37,35 @@ class Generic(object):
         response = es.search(index=generic_index, doc_type=generic_type, body=doc, scroll=scroll)
         return response
 
-    def read_single(self, generic_index, generic_type, uuid):
+    def read_single(self, generic_index, generic_type, guid):
         response = {}
         response["generic_type"] = generic_type
-        response["uuid"] = uuid
+        response["guid"] = guid
         return response
 
-    def create(self, generic_index, generic_type, uuid, data):
-        response = es.index(index=generic_index, doc_type=generic_type, id=uuid, body=data, _source=True)
+    def create_with_guid(self, generic_index, generic_type, data):
+        # create new guid
+        guid = str(uuid.uuid4())
+        response = es.index(index=generic_index, doc_type=generic_type, id=guid, body=data)
         return response
 
-    def update(self, generic_index, generic_type, uuid, data):
-        response = es.update(index=generic_index, doc_type=generic_type, id=uuid, body=data, _source=True)
+    def create(self, generic_index, generic_type, guid, data):
+        response = es.index(index=generic_index, doc_type=generic_type, id=guid, body=data)
         return response
 
-    def delete(self, generic_index, generic_type, uuid):
-        response = es.delete(index=generic_index, doc_type=generic_type, id=uuid)
+    def update(self, generic_index, generic_type, guid, data):
+        response = es.update(index=generic_index, doc_type=generic_type, id=guid, body=data)
+        return response
+
+    def delete(self, generic_index, generic_type, guid):
+        response = es.delete(index=generic_index, doc_type=generic_type, id=guid)
         return response
 
 
 GEN = Generic()
 
-payload = api.model('Todo', fields.Raw)
+
+# payload = api.model('Todo')
 
 
 @api.route("/<generic_index>/<generic_type>")
@@ -73,52 +81,63 @@ class GenericList(Resource):
         scroll = "1m"
         return jsonify(GEN.read_all(generic_index, generic_type, scroll))
 
-
-@api.route("/<generic_index>/<generic_type>/<uuid>")
-@api.param("generic_index", "The generic index")
-@api.param("generic_type", "The generic type name")
-@api.param("uuid", "The unique identifier of the object")
-class GenericSingle(Resource):
     @api.doc("Create a new generic object", expect=[fields.Raw])
-    # @api.route("/:uuid")
-    def post(self, generic_index, generic_type, uuid):
+    # @api.route("/:guid")
+    def post(self, generic_index, generic_type):
         """
         reate a new generic object
         :param generic_type:
-        :param uuid:
+        :param guid:
         :return:
         """
-        return jsonify(GEN.create(generic_index, generic_type, uuid, api.payload)), 201
+        return jsonify(GEN.create_with_guid(generic_index, generic_type, api.payload)), 201
+
+
+@api.route("/<generic_index>/<generic_type>/<guid>")
+@api.param("generic_index", "The generic index")
+@api.param("generic_type", "The generic type name")
+@api.param("guid", "The unique identifier of the object")
+class GenericSingle(Resource):
+    @api.doc("Create a new generic object", expect=[fields.Raw])
+    # @api.route("/:guid")
+    def post(self, generic_index, generic_type, guid):
+        """
+        reate a new generic object
+        :param generic_type:
+        :param guid:
+        :return:
+        """
+        return jsonify(GEN.create(generic_index, generic_type, guid, api.payload)), 201
 
     @api.doc("Read a single generic object")
-    def get(self, generic_index, generic_type, uuid):
+    def get(self, generic_index, generic_type, guid):
         """
         Read a single generic object
         :param generic_type:
-        :param uuid:
+        :param guid:
         :return:
         """
-        return jsonify(GEN.read_single(generic_index, generic_type, uuid))
+        return jsonify(GEN.read_single(generic_index, generic_type, guid))
 
     @api.doc("Update a single generic object")
-    @api.expect(payload)
-    def put(self, generic_index, generic_type, uuid):
+    # @api.expect(payload)
+    def put(self, generic_index, generic_type, guid):
         """
         Update a single generic object
         :param generic_type:
-        :param uuid:
+        :param guid:
         :return:
         """
-        return jsonify(GEN.update(generic_index, generic_type, uuid, api.payload))
+        return jsonify(GEN.update(generic_index, generic_type, guid, api.payload))
 
     @api.doc("Delete a single generic object")
     @api.response(204, "Symptom deleted")
-    def delete(self, generic_index, generic_type, uuid):
+    def delete(self, generic_index, generic_type, guid):
         """
         Delete a single generic object
         :param generic_type:
-        :param uuid:
+        :param guid:
         :return:
         """
-        GEN.delete(generic_index, generic_type, uuid)
+        GEN.delete(generic_index, generic_type, guid)
         return "", 204

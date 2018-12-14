@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 from flask import Flask, Blueprint, url_for, jsonify
 from flask_cors import CORS
 from flask_restplus import Api
-from gevent import os
+import os
 
 from apis.v1 import blueprint as v1
 
@@ -15,6 +15,11 @@ app.register_blueprint(v1)
 ES_HOST = os.environ.get('ELASTIC_SERACH_HOST', None)
 ES_USERNAME = os.environ.get('ELASTIC_SERACH_USERNAME', None)
 ES_PASSWORD = os.environ.get('ELASTIC_SERACH_PASSWORD', None)
+
+if len(ES_HOST) == 0 or len(ES_USERNAME) == 0:
+    print("No environment parameters set. Please specify")
+    os._exit(os.EX_NOHOST)
+
 
 es = Elasticsearch(
     [ES_HOST],
