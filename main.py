@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 from flask import Flask, Blueprint, url_for, jsonify
+from flask_cors import CORS
 from flask_restplus import Api
 from gevent import os
 
@@ -7,7 +8,7 @@ from apis.v1 import blueprint as v1
 
 # Init flask
 app = Flask(__name__)
-
+cors = CORS(app)
 # Register blueprints
 app.register_blueprint(v1)
 
