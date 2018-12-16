@@ -1,12 +1,9 @@
-import uuid
-
-from elasticsearch import Elasticsearch
 from flask import request, jsonify
 from flask_restplus import Namespace, Resource, fields, reqparse
 
-from services.langdetec_service import doc_lang
-from services.pipeline_service import handle_document
-from services.spacy_service import doc_spacy, doc_ner, doc_pos, doc_tokenize, doc_clean
+from services.pipeline_service import *
+from services.spacy_service import *
+from services.vader_service import *
 
 es = Elasticsearch()
 
@@ -130,4 +127,26 @@ class Language(Resource):
         result["input"] = document
         # return result
         result["output"] = doc_lang(document)
+        return jsonify(result)
+
+
+@api.route('/sentiment')
+class Language(Resource):
+    @api.doc('Calc sentiment')
+    @api.expect(resource_fields)
+    def post(self):
+        # parse arguments
+        req = request.get_json(silent=True)
+        # get document
+        document = req['document']
+        # init result dict
+        result = dict()
+        result["input"] = document
+        # check if input is list
+        if isinstance(document, list):
+            result["output"] = sentences_sentiment(document)
+        else:
+            result["output"] = sentences_sentiment([document])
+        # return result
+
         return jsonify(result)

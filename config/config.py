@@ -1,4 +1,1 @@
-FOLDER = "./data/projects/"
-
-def get_folder():
-    return "./data/projects/"
+FOLDER = "/Users/sebastianerhardt/Projects/eai/eai-nlp/data/projects/"

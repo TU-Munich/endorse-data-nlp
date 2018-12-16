@@ -12,6 +12,7 @@ def clean_content(content: str):
     :param content: the content as a string
     :return: the cleaned content
     """
+    # todo: use this faster python parser
     content = re.sub(r'^\n\n*', '', content)
     content = re.sub(r'\s\s*', ' ', content)
     content = re.sub(r'\n\n*', '\n', content)
