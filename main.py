@@ -20,7 +20,6 @@ if len(ES_HOST) == 0 or len(ES_USERNAME) == 0:
     print("No environment parameters set. Please specify")
     os._exit(os.EX_NOHOST)
 
-
 es = Elasticsearch(
     [ES_HOST],
     http_auth=(ES_USERNAME, ES_PASSWORD),
@@ -51,4 +50,4 @@ def get(index, type, id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, host='0.0.0.0', port=5002)
