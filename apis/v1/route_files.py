@@ -5,8 +5,28 @@ from flask_restplus import Namespace, Resource
 from werkzeug.utils import secure_filename
 from services.files_service import *
 from config.config import FOLDER
+from services.pipeline_service import handle_file
 
 api = Namespace('Files', description='All functionalities of the project file service')
+
+
+@api.route('/project/<string:projectUUID>/file', methods=['POST'])
+@api.doc('Upload Project Files')
+class UploadProjectFile(Resource):
+    def post(self, projectUUID):
+        """
+        Upload file to a project
+        :param projectUUID:
+        :return:
+        """
+        for file in request.files.getlist('filepond'):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(FOLDER + projectUUID, filename)
+            file.save(file_path)
+            # Start pipeline
+            handle_file(projectUUID, file_path)
+
+        return '', 204
 
 
 @api.route('/project/<string:projectUUID>/files', methods=['POST'])
@@ -18,10 +38,14 @@ class UploadProjectFiles(Resource):
         :param projectUUID:
         :return:
         """
-        for file in request.files.getlist('files'):
+        for file in request.files.getlist('filepond'):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(FOLDER + projectUUID, filename))
-        return 'Upload completed.'
+            file_path = os.path.join(FOLDER + projectUUID, filename)
+            file.save(file_path)
+            # Start pipeline
+            handle_file(projectUUID, file_path)
+
+        return '', 204
 
 
 @api.route('/project/<string:projectUUID>/files', methods=['GET'])
