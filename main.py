@@ -3,11 +3,12 @@ from flask import Flask, Blueprint, url_for, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_restplus import Api
 import os
+from services.elastic_search import es
 
 from apis.v1 import blueprint as v1
 
 # Env variables
-from config.initial import initial_project
+from config.initial import init_initial_project
 
 DEBUG = os.environ.get('DEBUG', True)
 
@@ -19,21 +20,7 @@ cors = CORS(app)
 # Register blueprints
 app.register_blueprint(v1)
 
-INIT = os.environ.get('INIT', None)
-ES_HOST = os.environ.get('ELASTIC_SERACH_HOST', None)
-ES_USERNAME = os.environ.get('ELASTIC_SERACH_USERNAME', None)
-ES_PASSWORD = os.environ.get('ELASTIC_SERACH_PASSWORD', None)
-
-if len(ES_HOST) == 0 or len(ES_USERNAME) == 0:
-    print("No environment parameters set. Please specify")
-    os._exit(os.EX_NOHOST)
-
-es = Elasticsearch(
-    [ES_HOST],
-    http_auth=(ES_USERNAME, ES_PASSWORD),
-    scheme="http",
-    port=80,
-)
+INIT = os.environ.get('INIT', False)
 
 
 # Serve the frontend
@@ -57,11 +44,11 @@ def get(index, type, id):
 
     return jsonify(result)
 
-initial_project(es)
+init_initial_project(es)
 
 if __name__ == '__main__':
     # init
-    if INIT != None:
-        initial_project(es)
+    if INIT:
+        init_initial_project(es)
 
     app.run(debug=DEBUG, host='0.0.0.0', port=5000)

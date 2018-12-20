@@ -1,23 +1,11 @@
-import os
 import uuid
-from flask import Flask, request, jsonify
+from flask import request, jsonify
 from flask_restplus import Namespace, Resource, fields, reqparse
-from elasticsearch import Elasticsearch
+from services.elastic_search import es
 
 BLACKLIST = {
     "users": True,
 }
-
-ES_HOST = os.environ.get('ELASTIC_SERACH_HOST', None)
-ES_USERNAME = os.environ.get('ELASTIC_SERACH_USERNAME', None)
-ES_PASSWORD = os.environ.get('ELASTIC_SERACH_PASSWORD', None)
-
-es = Elasticsearch(
-    [ES_HOST],
-    http_auth=(ES_USERNAME, ES_PASSWORD),
-    scheme="http",
-    port=80,
-)
 
 api = Namespace("Generic API", description="The generic api endpoints")
 
@@ -26,7 +14,7 @@ class Generic(object):
     def __init__(self):
         self.data = dict
 
-    def read_all(self, generic_index, generic_type, scroll):
+    def read_all(self, generic_index, generic_type, scroll, sort):
         doc = {
             'size': 10000,
             'query': {
@@ -34,7 +22,7 @@ class Generic(object):
             }
         }
         print(generic_index, generic_type)
-        response = es.search(index=generic_index, doc_type=generic_type, body=doc, scroll=scroll)
+        response = es.search(index=generic_index, doc_type=generic_type, body=doc, scroll=scroll, sort=sort)
         return response
 
     def read_single(self, generic_index, generic_type, guid):
@@ -78,8 +66,9 @@ class GenericList(Resource):
         Read all generic objects
         :return:
         """
-        scroll = "1m"
-        return jsonify(GEN.read_all(generic_index, generic_type, scroll))
+        sort = request.args.get('sort', default="", type=str)
+        scroll = request.args.get('scroll', default="1m", type=str)
+        return jsonify(GEN.read_all(generic_index, generic_type, scroll, sort))
 
     @api.doc("Create a new generic object", expect=[fields.Raw])
     # @api.route("/:guid")
@@ -90,7 +79,9 @@ class GenericList(Resource):
         :param guid:
         :return:
         """
-        return jsonify(GEN.create_with_guid(generic_index, generic_type, api.payload)), 201
+        response = jsonify(GEN.create_with_guid(generic_index, generic_type, api.payload))
+        response.status_code = 201
+        return response
 
 
 @api.route("/<generic_index>/<generic_type>/<guid>")
@@ -107,7 +98,9 @@ class GenericSingle(Resource):
         :param guid:
         :return:
         """
-        return jsonify(GEN.create(generic_index, generic_type, guid, api.payload)), 201
+        response = jsonify(GEN.create(generic_index, generic_type, guid, api.payload))
+        response.status_code = 201
+        return response
 
     @api.doc("Read a single generic object")
     def get(self, generic_index, generic_type, guid):

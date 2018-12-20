@@ -2,7 +2,7 @@ import datetime
 from elasticsearch import Elasticsearch
 
 
-def initial_project(es: Elasticsearch):
+def init_initial_project(es: Elasticsearch):
     """
     Create the initial project which is hillary's emails
     :param es:

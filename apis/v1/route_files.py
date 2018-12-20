@@ -19,6 +19,8 @@ class UploadProjectFile(Resource):
         :param projectUUID:
         :return:
         """
+        if not os.path.exists(FOLDER + projectUUID):
+            os.makedirs(FOLDER + projectUUID)
         for file in request.files.getlist('filepond'):
             filename = secure_filename(file.filename)
             file_path = os.path.join(FOLDER + projectUUID, filename)
@@ -38,6 +40,9 @@ class UploadProjectFiles(Resource):
         :param projectUUID:
         :return:
         """
+        if not os.path.exists(FOLDER + projectUUID):
+            os.makedirs(FOLDER + projectUUID)
+
         for file in request.files.getlist('filepond'):
             filename = secure_filename(file.filename)
             file_path = os.path.join(FOLDER + projectUUID, filename)

@@ -11,4 +11,4 @@ class Pipeline(Resource):
     def get(self, projectUUID):
         folder_path = FOLDER + projectUUID
         handle_folder(projectUUID, folder_path)
-        return (200, 'YES')
+        return "", 204

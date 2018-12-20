@@ -4,8 +4,8 @@ from flask_restplus import Namespace, Resource, fields, reqparse
 from services.pipeline_service import *
 from services.spacy_service import *
 from services.vader_service import *
+from services.elastic_search import es
 
-es = Elasticsearch()
 
 api = Namespace('NLP', description='All functionalities of the natural language processing service')
 
