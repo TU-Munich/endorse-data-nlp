@@ -3,6 +3,8 @@ from flask import Flask, Blueprint, url_for, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_restplus import Api
 import os
+
+from apis.v1.router_user import UserDbHandler
 from services.elastic_search import es
 
 from apis.v1 import blueprint as v1
@@ -44,9 +46,26 @@ def get(index, type, id):
 
     return jsonify(result)
 
+
 init_initial_project(es)
 
 if __name__ == '__main__':
+
+    # Create a new admin if not present
+    create_admin = os.environ.get("CREATE_ADMIN", None)
+    admin_password = os.environ.get("ADMIN_PASSWORD", None)
+    print(create_admin)
+    print(admin_password)
+    if create_admin and admin_password:
+        # ADMIN
+
+        data = {
+            "user_name": "admin",
+            "name": "admin",
+            "password": admin_password
+        }
+        UserDbHandler.create_default_admin(data)
+
     # init
     if INIT:
         init_initial_project(es)

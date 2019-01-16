@@ -7,6 +7,7 @@ from .router_generic import api as generic_api
 from .router_pipeline import api as pipeline_api
 from .router_analytics import api as analytics_api
 from .router_user import api as user_api
+from .router_project import api as project_api
 
 blueprint = Blueprint('api', __name__, url_prefix='/api/1')
 api = Api(blueprint,
@@ -16,6 +17,7 @@ api = Api(blueprint,
           # All API metadatas
           )
 
+api.add_namespace(project_api, path="/projects")
 api.add_namespace(spacy_api, path="/nlp")
 api.add_namespace(files_api, path="/files")
 api.add_namespace(tika_api, path="/tika")

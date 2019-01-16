@@ -11,6 +11,7 @@ http://127.0.0.1:5000/api/1/api/v1/
 * Google Lang Detect
 * Apache Tika
 * Flask
+* Vader
 
 
 ## Authors
@@ -22,6 +23,8 @@ http://127.0.0.1:5000/api/1/api/v1/
 ELASTIC_SERACH_HOST=XXX
 ELASTIC_SERACH_USERNAME=XXX
 ELASTIC_SERACH_PASSWORD=XXX
+CREATE_ADMIN=TRUE
+ADMIN_PASSWORD=XXXX
 ```
 
 ## Credentials
