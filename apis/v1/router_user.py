@@ -2,8 +2,9 @@ from flask import Flask, request, jsonify
 from flask_restplus import Namespace, Resource, fields, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
-                                get_jwt_identity, get_raw_jwt, JWTManager)
+                                get_jwt_identity, get_raw_jwt)
 from services.elastic_search import es
+from elasticsearch import NotFoundError
 
 api = Namespace("User API", description="The User api endpoints")
 
@@ -38,8 +39,11 @@ class UserDbHandler(object):
     def get_user_by_email(self, email):
         response = ""
         if es.indices.exists(index="endorse-users-index"):
-            response = es.get(index="endorse-users-index", doc_type="user", id=email)
-            print(response)
+            try:
+                response = es.get(index="endorse-users-index", doc_type="user", id=email)
+                print(response)
+            except NotFoundError:
+                pass
 
         # if response["hits"]["total"] > 0:
         #    for user in response["hits"]["hits"]:
@@ -130,9 +134,7 @@ class login(Resource):
         token_payload = {
             "email": email,
             "id": result["_id"],
-            "name": result["_source"]["name"],
-            "roles": result["_source"]["roles"],
-            "image_url": result["_source"]["image_url"]
+            "username": result["_source"]["username"],
         }
 
         access_token = create_access_token(identity=token_payload)
@@ -149,11 +151,12 @@ class register(Resource):
     def post(self):
         payload = request.get_json(force=True)
 
-        if "password" not in payload or "email" not in payload:
-            return {"msg": "username/password/email Missing"}, 400
+        if "password" not in payload or "email" not in payload or "user" not in payload:
+            return {"msg": "user/password/email Missing"}, 400
 
-        email = payload["email"]
         password = payload["password"]
+        email = payload["email"]
+        username = payload["user"]
 
         # Check if user already exists
         exists_already = DbOps.get_user_by_email(email)
@@ -166,6 +169,7 @@ class register(Resource):
         data = {
             "password": password,
             "email": email,
+            "username": username
         }
 
         resp = DbOps.create_user(data)

@@ -1,6 +1,7 @@
 from elasticsearch import Elasticsearch
 from flask import Flask, Blueprint, url_for, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from flask_restplus import Api
 import os
 
@@ -18,6 +19,8 @@ static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sta
 
 # Init flask
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = 'jwt-super-secret-string'
+jwt = JWTManager(app)
 cors = CORS(app)
 # Register blueprints
 app.register_blueprint(v1)
