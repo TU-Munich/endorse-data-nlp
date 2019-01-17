@@ -36,8 +36,10 @@ class UserDbHandler(object):
         return response["hits"]["hits"]
 
     def get_user_by_email(self, email):
-        response = es.get(index="endorse-users-index", doc_type="user", id=email)
-        print(response)
+        response = ""
+        if es.indices.exists(index="endorse-users-index"):
+            response = es.get(index="endorse-users-index", doc_type="user", id=email)
+            print(response)
 
         # if response["hits"]["total"] > 0:
         #    for user in response["hits"]["hits"]:
