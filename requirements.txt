@@ -6,5 +6,5 @@ langdetect==1.0.7
 Flask==1.0.2
 Flask_JWT_Extended==3.14.0
 Werkzeug==0.14.1
-secrets==1.0.2
 vaderSentiment==3.2.1
+spacy==2.0.18
