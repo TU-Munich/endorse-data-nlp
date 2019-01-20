@@ -1,5 +1,5 @@
 flask_restplus==0.12.1
-tika==1.19
+tika==1.18
 Flask_Cors==3.0.7
 elasticsearch==6.3.1
 langdetect==1.0.7
