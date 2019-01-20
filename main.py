@@ -73,4 +73,4 @@ if __name__ == '__main__':
     if INIT:
         init_initial_project(es)
 
-    app.run(debug=DEBUG, host='0.0.0.0', port=5000)
+    app.run(debug=DEBUG, host='0.0.0.0', port=3002)
