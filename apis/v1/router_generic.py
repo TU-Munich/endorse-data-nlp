@@ -42,7 +42,7 @@ class Generic(object):
         return response
 
     def update(self, generic_index, generic_type, guid, data):
-        response = es.update(index=generic_index, doc_type=generic_type, id=guid, body=data)
+        response = es.update(index=generic_index, doc_type=generic_type, id=guid, body={"doc": data})
         return response
 
     def delete(self, generic_index, generic_type, guid):
