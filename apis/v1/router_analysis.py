@@ -1,6 +1,5 @@
 from flask_restplus import Namespace, Resource
 from services.pipeline_service import *
-from config.config import FOLDER
 from flask import request, jsonify
 
 api = Namespace('Analysis', description='All file analysis per project')
@@ -17,12 +16,27 @@ class RetrieveAnalysisProjectFiles(Resource):
         :return:
         """
         q = {
-            "_source": ["ner"],
+            "size": "0",
             "query": {
-                "term": {
-                    "project_uuid": projectUUID,
+                "term": {"project_uuid": projectUUID}
+            },
+            "aggs": {
+                "count": {
+                    "terms": {
+                        "field": "ner.text.keyword"
+                    }
                 }
             }
         }
         response = es.search(index="document-index", doc_type="document", body=q)
-        return jsonify(response)
+        labels = []
+        counts = []
+
+        for bucket in response["aggregations"]["count"]["buckets"]:
+            labels.append(bucket["key"])
+            counts.append(bucket["doc_count"])
+
+        return jsonify(labels, counts)
+
+
+
