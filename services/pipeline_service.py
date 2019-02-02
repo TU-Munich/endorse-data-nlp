@@ -1,5 +1,6 @@
 import hashlib
 import time
+import json
 from services.langdetec_service import *
 from services.spacy_service import *
 from services.files_service import *
@@ -7,6 +8,35 @@ from services.tika_service import *
 from services.vader_service import *
 from services.elastic_search import es
 
+
+def handle_crawler_folder(project_uuid, folder_path):
+    # get all files in the folder
+    file_paths = read_all_files(folder_path)
+    # print("FILES:")
+    # print(file_paths)
+    for file_path in file_paths:
+        handle_crawler_file(project_uuid, file_path)
+
+    return
+
+def handle_crawler_file(project_uuid, file_path):
+    # create a hashname from the filepath
+    id = hashlib.md5(str(file_path).encode("utf8")).hexdigest()
+    # open file with tika
+    #parsed_doc = parse_file(file_path)
+    with open(file_path, 'r') as f:
+        loaded_json = json.load(f)
+        # run the nlp pipeline on text
+        result = handle_document(loaded_json['content'])
+    
+    # remove content
+    # its now called input
+    # result["_meta"] = parsed_doc["meta"]
+    result["file_path"] = file_path
+    result["project_uuid"] = project_uuid
+
+    es.index(index="document-index", doc_type="document", id=id, body=result)
+    return
 
 def handle_folder(project_uuid, folder_path):
     # get all files in the folder

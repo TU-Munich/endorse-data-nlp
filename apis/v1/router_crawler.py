@@ -43,7 +43,7 @@ class ExecuteCrawler(Resource):
         }
         
         
-        execute_crawler(request_body)
+        execute_crawler(request_body, projectUUID)
 
         return {
             'message':'Inside the crawler function',
