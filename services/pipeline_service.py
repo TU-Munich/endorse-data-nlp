@@ -28,6 +28,7 @@ def handle_crawler_file(project_uuid, file_path):
         loaded_json = json.load(f)
         # run the nlp pipeline on text
         result = handle_document(loaded_json['content'])
+        #print(result)
     
     # remove content
     # its now called input
