@@ -15,20 +15,22 @@ class Generic(object):
         self.data = dict
 
     def read_all(self, generic_index, generic_type, scroll, sort):
-        doc = {
-            'size': 10000,
-            'query': {
-                'match_all': {}
-            }
-        }
+        doc = {'size': 10000, 'query': {'match_all': {}}}
         print(generic_index, generic_type)
         response = es.search(index=generic_index, doc_type=generic_type, body=doc, scroll=scroll, sort=sort)
         return response
 
+    def read_all_with_query(self, generic_index, generic_type, query):
+        print(query)
+        response = es.search(index=generic_index, doc_type=generic_type, body=query)
+        return response
+
     def read_single(self, generic_index, generic_type, guid):
-        response = {}
-        response["generic_type"] = generic_type
-        response["guid"] = guid
+        response = es.search(index=generic_index, doc_type=generic_type, id=guid)
+        return response
+
+    def read_single_with_query(self, generic_index, generic_type, query):
+        response = es.search(index=generic_index, doc_type=generic_type, body=query)
         return response
 
     def create_with_guid(self, generic_index, generic_type, data):
@@ -93,7 +95,7 @@ class GenericSingle(Resource):
     # @api.route("/:guid")
     def post(self, generic_index, generic_type, guid):
         """
-        reate a new generic object
+        Create a new generic object
         :param generic_type:
         :param guid:
         :return:
@@ -134,3 +136,19 @@ class GenericSingle(Resource):
         """
         GEN.delete(generic_index, generic_type, guid)
         return "", 204
+
+
+@api.route("/query/<generic_index>/<generic_type>")
+@api.param("generic_index", "The generic index")
+@api.param("generic_type", "The generic type name")
+class GenericListQuery(Resource):
+    @api.doc('Read all generic objects using elasticsearch query as request payload', expect=[fields.Raw])
+    def post(self, generic_index, generic_type):
+        """
+        Read all generic objects using elasticsearch query as request payload
+        :param generic_index:
+        :param generic_type:
+        :payload elasticsearch query:
+        :return:
+        """
+        return jsonify(GEN.read_all_with_query(generic_index, generic_type, api.payload))
