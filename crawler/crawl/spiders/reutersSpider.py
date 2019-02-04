@@ -4,16 +4,15 @@ from selenium import webdriver
 import datetime
 import time
 import json
+import logging
 
 
 
 class ReutersSpider(scrapy.Spider):
     name = "reutersCrawler"
+    #start_url is not use but need to place in here
     start_urls = ['https://www.reuters.com/search/news?blob=taiwan&sortBy=date&dateRange=pastDay']
-    
-    #Define firefox related parameters
-    fireFoxOptions = webdriver.FirefoxOptions()
-    fireFoxOptions.set_headless()
+    #start_urls = request_url
 
     #Define chrome related parameters
     options = webdriver.ChromeOptions()
@@ -24,28 +23,36 @@ class ReutersSpider(scrapy.Spider):
     options.add_argument('disable-dev-shm-usage')
     options.add_argument('window-size=1200x600')
 
-    
-    def __init__(self, projectID=None, *args, **kwargs):
-        super(ReutersSpider, self).__init__(*args, **kwargs)
-        #self.driver = webdriver.Firefox(firefox_options=self.fireFoxOptions)
+    def __init__(self, *args, **kwargs):
+        #Initialize the spider
         self.driver = webdriver.Chrome(chrome_options=self.options)
-        #self.driver = webdriver.Firefox()
-        self.folder = "/data/projects/"+ projectID
-        self.resultsPath = str(self.folder) + "/crawler" + "/Reuters"
 
+        # Get the projectID and parsed request for this spider
+        with open('/tmp/project_request.json') as f:
+            data = json.load(f)
+        self.projectID = data['projectID']
+        self.request_url = data['Reuters_query_url']
+        self.timestamp = data['timestamp']
+        self.logger.info('\nprojectID= %s\n', self.projectID)
+        self.logger.info('\nrequest_url= %s\n', self.request_url)
+        self.logger.info('\ntimestamp= %s\n', self.timestamp)
+
+        # Finalize the path for store files
+        self.folder = "/data/projects/"+ self.projectID
+        self.resultsPath = str(str(self.folder) + "/crawler" + "/Reuters" + "/" + self.timestamp)
+        self.logger.info('\n Resultpath= %s\n', self.resultsPath)
+        
         self.driver.implicitly_wait(3)
         if not os.path.exists(self.resultsPath):
             try:
                 os.makedirs(self.resultsPath)
-                print("\nfolder is not existed and i created!\n")
             except Exception as ee:
                 print(str(ee))
-
+    
     def parse(self, response):
 
         driver = self.driver
-        driver.get('https://www.reuters.com/search/news?blob=taiwan&sortBy=date&dateRange=pastDay')
-
+        driver.get(self.request_url)
         while True:
             try:
                 load_more = driver.find_element_by_xpath("//*[contains(text(), 'LOAD MORE RESULTS')]")
@@ -57,13 +64,9 @@ class ReutersSpider(scrapy.Spider):
         for elem in h3_elements:
             
             article_url = elem.find_element_by_xpath(".//a").get_attribute("href")
-            
-            #article_url='https://www.reuters.com'+ str(article_path)
+        
             print("Article URL:%s" %article_url)
-            #single_article_driver = webdriver.Firefox(firefox_options=self.fireFoxOptions)
             single_article_driver = webdriver.Chrome(chrome_options=self.options)
-            
-            #single_article_driver = webdriver.Firefox()
             single_article_driver.get(article_url)
 
 
@@ -86,7 +89,6 @@ class ReutersSpider(scrapy.Spider):
                 single_article_driver.close()
                 continue
         driver.close()
-
     
     def file_write(self, article):
         
