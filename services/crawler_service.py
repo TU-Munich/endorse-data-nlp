@@ -1,49 +1,72 @@
 import os
+import datetime
 from config.config import FOLDER
 from services.pipeline_service import handle_crawler_folder
+import logging
+import json
+
+def parse_request(projectID, timestamp,request):
+    query = request['query']
+    source = request['source']
+    period = request['period']
+
+    query_url = {
+        "Reuters":"",
+        "NYT":"",
+        "Bloomberg":"",
+        "WP":""
+    }
+    #Since every website have different query format, then it need to customize
+    #Reuters query
+    if(period == "Past Day"):
+        Reuters_period = "pastDay"
+    elif(period == "Past Week"):
+        Reuters_period = "pastWeek"
+    else:
+        Reuters_period = "pastMonth"        
+
+    query_url["Reuters"] = 'https://www.reuters.com/search/news?sortBy=date&dateRange='+ Reuters_period +'&blob='+ query
+    logging.debug("\nquery:%s\n" %query_url["Reuters"])
+    
+    # Will append other source's schema here
+
+    #Store into .json file for later use
+    data = {
+        'projectID':projectID,
+        'timestamp': str(timestamp),
+        'Reuters_query_url':query_url['Reuters']
+    }
+    with open("/tmp" + "/project_request.json", "w") as outfile:
+        json.dump(data, outfile)
 
 def execute_crawler(request,projectUUID):
+    logging.basicConfig(level=logging.DEBUG,  
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',  
+                    datefmt='%a, %d %b %Y %H:%M:%S',  
+                    filename='/tmp/test.log',  
+                    filemode='w')  
+    
     if not os.path.exists(FOLDER + projectUUID):
             os.makedirs(FOLDER + projectUUID)
-    
-    REUTERS_Path = "/data/projects/" + projectUUID + "/crawler" + "/Reuters"
-    # filename = secure_filename(file.filename)
-    # file_path = os.path.join(FOLDER + projectUUID, filename)
-    # file.save(file_path)
-    # cwd_enter = os.getcwd()
-    # os.system(print("\nEnter the execute_crawler:%s\n"%cwd_enter))
-    # try:
-    #     os.mkdir("test")
-    # except Exception as ee:
-    #     print(str(ee))
-
-    # try:
-    #     file_write(request['query'], request['source'], request['period'])
-    # except Exception as ee:
-    #     print(str(ee))
+    timestamp =  datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
+    REUTERS_Path = "/data/projects/" + projectUUID + "/crawler" + "/Reuters" + "/" + str(timestamp)
+    logging.debug("\nReuters_path:%s\n" %REUTERS_Path)
     crawler_folder_path = ('/usr/src/app/crawler')
-    #之後這裡要放入修改query的function
+    
 
-
-
-
-    #執行對應的爬蟲
-    execute_crawler_cmd = ('scrapy crawl reutersCrawler -a projectID=%s' %projectUUID)
-    # after_write = os.getcwd()
-    # os.system(print("\nafter file write:%s\n"%cwd_enter))
-    # os.getcwd()
+    # Parse the request and store into file for crawler 
+    parse_request(projectUUID, timestamp, request)
+    #logging.debug("\nInside the execute crawl funciton parsed_query_url:%s\n" %parsed_query_url["Reuters"])
+   
+    execute_reuters_crawler_cmd = ('scrapy crawl reutersCrawler')
+    #logging.debug(execute_reuters_crawler_cmd)
     os.chdir(crawler_folder_path)
-    
-    os.system(execute_crawler_cmd)
-    handle_crawler_folder(projectUUID,REUTERS_Path) 
-    
-def file_write(query, period, source):
-        #print("######################file method inside######################")
-        fileName = str(query) + ".txt"
-            
-        file = open("test/" +fileName, "w")
-        # Write titile, URL, content into the file
-        file.write(str(query) + "\n")
-        file.write(str(period) + "\n")
-        file.write(str(source))
-        file.close()
+    #Check which crawler should execute
+    if("Reuters" in request['source']):
+        os.system(execute_reuters_crawler_cmd)
+        #logging.debug("\nRetuers is selected, Reuters_path:%s\n" %REUTERS_Path)
+        handle_crawler_folder(projectUUID,REUTERS_Path)
+
+    # Remove the parsed request file
+    remove_project_request_file_cmd = ('rm -f /tmp/project_request.json')
+    os.system(remove_project_request_file_cmd)
