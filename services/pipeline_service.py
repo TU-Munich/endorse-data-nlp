@@ -33,9 +33,8 @@ def handle_file(project_uuid, file_path):
     # result["_meta"] = parsed_doc["meta"]
     result["file_path"] = file_path
     result["project_uuid"] = project_uuid
-
-    es.index(index="document-index", doc_type="document", id=id, body=result)
-    return
+    response = es.index(index="document-index", doc_type="document", id=id, body=result)
+    return response
 
 
 def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True):

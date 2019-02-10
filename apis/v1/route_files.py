@@ -1,6 +1,6 @@
 import os
 import glob
-from flask import Flask, request, render_template, send_from_directory, send_file
+from flask import Flask, request, render_template, send_from_directory, send_file, jsonify
 from flask_restplus import Namespace, Resource
 from werkzeug.utils import secure_filename
 from services.files_service import *
@@ -12,6 +12,7 @@ api = Namespace('Files', description='All functionalities of the project file se
 
 @api.route('/project/<string:projectUUID>/file', methods=['POST'])
 @api.doc('Upload Project Files')
+@api.response(200, 'Upload new files')
 class UploadProjectFile(Resource):
     def post(self, projectUUID):
         """
@@ -19,6 +20,7 @@ class UploadProjectFile(Resource):
         :param projectUUID:
         :return:
         """
+        response = {}
         if not os.path.exists(FOLDER + projectUUID):
             os.makedirs(FOLDER + projectUUID)
         for file in request.files.getlist('filepond'):
@@ -26,9 +28,9 @@ class UploadProjectFile(Resource):
             file_path = os.path.join(FOLDER + projectUUID, filename)
             file.save(file_path)
             # Start pipeline
-            handle_file(projectUUID, file_path)
-
-        return '', 204
+            result = handle_file(projectUUID, file_path)
+            response = { "name": filename, "result": result }
+        return jsonify(response)
 
 
 @api.route('/project/<string:projectUUID>/files', methods=['POST'])
