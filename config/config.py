@@ -1,2 +1,3 @@
-#FOLDER = "/data/projects/"
-FOLDER="/Users/marcosalazar/WS2018/SEBIS/files/"
+import os
+
+FOLDER = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)) + "/data/projects/"

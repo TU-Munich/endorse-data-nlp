@@ -12,6 +12,7 @@ http://127.0.0.1:3002/api/1/
 * Apache Tika
 * Flask
 * Vader
+* LASER - facebook research
 
 
 ## Authors
@@ -36,3 +37,12 @@ ADMIN_PASSWORD=XXXX
 ## Run with docker compose
 In order to start the project using the docker configuration, please refer to the README file located
 in the repository endorse-elk.
+
+## Install LASER
+
+```
+
+bash ./install_models.sh
+bash ./install_external_tools.sh
+
+```

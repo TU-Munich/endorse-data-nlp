@@ -1,3 +1,6 @@
+import random
+import string
+
 from flask import request, jsonify
 from flask_restplus import Namespace, Resource, fields, reqparse
 
@@ -29,13 +32,16 @@ class Pipeline(Resource):
     def post(self):
         req = request.get_json(silent=True)
         # parse arguments
+        # create a hashname from the filepath
+        id = hashlib.md5(str(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))).encode("utf8")).hexdigest()
+
         debug = request.args.get('debug', default=False)
         document = req['document']  # request.args.get('sentence')
         # handle sentence
-        result = handle_document(document)
+        result = handle_document(id, document)
         # Save in database if its not debugged
         if not debug:
-            es.index(index="test-index", doc_type='sentence', id=uuid.uuid1(), body=result)
+            es.index(index="test-index", doc_type='sentence', id=id, body=result)
         # return json result
         return jsonify(result)
 

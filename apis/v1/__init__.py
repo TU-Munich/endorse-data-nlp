@@ -8,6 +8,8 @@ from .router_pipeline import api as pipeline_api
 from .router_analytics import api as analytics_api
 from .router_user import api as user_api
 from .router_project import api as project_api
+from .router_crawler import api as crawler_api
+from .router_similarity import api as similarity_api
 
 blueprint = Blueprint('api', __name__, url_prefix='/api/1')
 api = Api(blueprint,
@@ -23,5 +25,7 @@ api.add_namespace(files_api, path="/files")
 api.add_namespace(tika_api, path="/tika")
 api.add_namespace(generic_api, path="/generic")
 api.add_namespace(pipeline_api, path="/pipeline")
-api.add_namespace(analytics_api, path="/analytics")
 api.add_namespace(user_api, path="/user")
+api.add_namespace(crawler_api, path="/crawl")
+api.add_namespace(analytics_api, path="/analytics")
+api.add_namespace(similarity_api, path="/similarity")
