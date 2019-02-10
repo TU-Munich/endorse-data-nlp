@@ -98,10 +98,10 @@ def background_thread():
                     data = json.load(article)
                 # title = data['title']
                 # source = data['url']
-                if title not in article_list:
-                    article_list.append(data)
-                    socketio.emit('server_response',{'data': test_info})
-                    continue
+                # if title not in article_list:
+                article_list.append(data)
+                #socketio.emit('server_response',{'data': test_info})
+                continue
             socketio.emit('updated_article_list',{'data': article_list})
 
         except Exception as ee:
