@@ -75,3 +75,5 @@ def stop_crawler():
     # This will stop  multiple crawlers on this server
     stop_crawler_cmd = ('ps -A | grep scrapy | awk \'{print $1}\' | xargs kill -9 $1')
     os.system(stop_crawler_cmd)
+    stop_chomedriver_cmd = ('ps -A | grep chrome | awk \'{print $1}\' | xargs kill -9 $1')
+    os.system(stop_chomedriver_cmd)
