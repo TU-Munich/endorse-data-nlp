@@ -96,9 +96,10 @@ def background_thread():
             for articlePath in articlePaths:
                 with open(articlePath) as article:
                     data = json.load(article)
-                title = data['title']
+                # title = data['title']
+                # source = data['url']
                 if title not in article_list:
-                    article_list.append(title)
+                    article_list.append(data)
                     socketio.emit('server_response',{'data': test_info})
                     continue
             socketio.emit('updated_article_list',{'data': article_list})
