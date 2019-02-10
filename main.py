@@ -13,6 +13,7 @@ from apis.v1 import blueprint as v1
 # Env variables
 from config.initial import init_initial_project
 
+
 DEBUG = os.environ.get('DEBUG', True)
 
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
@@ -50,15 +51,13 @@ def get(index, type, id):
     return jsonify(result)
 
 
-init_initial_project(es)
-
 if __name__ == '__main__':
 
     # Create a new admin if not present
     create_admin = os.environ.get("CREATE_ADMIN", None)
     admin_password = os.environ.get("ADMIN_PASSWORD", None)
-    print(create_admin)
-    print(admin_password)
+    # print(create_admin)
+    # print(admin_password)
     if create_admin and admin_password:
         # ADMIN
 
@@ -71,6 +70,6 @@ if __name__ == '__main__':
 
     # init
     if INIT:
-        init_initial_project(es)
+        init_initial_project()
 
     app.run(debug=DEBUG, host='0.0.0.0', port=3002)

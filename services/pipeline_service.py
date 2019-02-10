@@ -6,6 +6,7 @@ from services.files_service import *
 from services.tika_service import *
 from services.vader_service import *
 from services.elastic_search import es
+from services.similarity.similarity_service import add_documents_to_index
 
 
 def handle_folder(project_uuid, folder_path):
@@ -23,9 +24,10 @@ def handle_file(project_uuid, file_path):
     # create a hashname from the filepath
     id = hashlib.md5(str(file_path).encode("utf8")).hexdigest()
     # open file with tika
+    print("FILE PATH", file_path)
     parsed_doc = parse_file(file_path)
     # run the nlp pipeline on text
-    result = handle_document(parsed_doc["content"])
+    result = handle_document(id, parsed_doc["content"])
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
@@ -40,7 +42,7 @@ def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True):
     # create a hashname from the filepath
     id = hashlib.md5(str(file_name).encode("utf8")).hexdigest()
     # run the nlp pipeline on text
-    result = handle_document(parsed_doc)
+    result = handle_document(id, parsed_doc)
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
@@ -53,7 +55,7 @@ def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True):
     return
 
 
-def handle_document(parsed_document):
+def handle_document(id, parsed_document):
     """
     Take a document and classify the language of the document
     with the google lang classifier
@@ -78,6 +80,8 @@ def handle_document(parsed_document):
     result["sentences"] = doc_tokenize(doc)
     # sentiment
     result["sentiment"] = sentences_sentiment(result["sentences"])
+    # similarity
+    result["similarity"] = add_documents_to_index(id, result["sentences"])
     # Part of Speech tagging
     result['pos'] = doc_pos(doc)
     # Named entity recognition

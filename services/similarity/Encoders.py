@@ -1,7 +1,10 @@
 from unicodedata import category
 import numpy as np
 import tensorflow as tf
+import tensorflow_hub as hub
 import pickle
+from services.similarity.LASER.source.embed import SentenceEncoder as LaserSentenceEncoder
+
 
 
 # https://github.com/UKPLab/arxiv2018-xling-sentence-embeddings/blob/master/model/sentence_embeddings.py
@@ -51,39 +54,51 @@ class Encoder():
         s = " ".join(s.split())
         return s
 
-    def clear_memory(self):
-        # clear all
-        tf.reset_default_graph()
-        # cuda.select_device(0)
-        # do tf stuff
-        # cuda.close()
-        # the memory was released here!
-        # cuda.select_device(0)
-        # to tf stuff -> caused an OOM
-
-    def save_as_pickle(self, lang, x):
-        np.savetxt(
-            self.file_path + self.prefix + lang.lower() + "-x-" + self.short_name + self.postfix + self.postfix_txt, x,
-            delimiter=',')  # X is an array
-        # save encoded
-        path = self.file_path + self.prefix + lang.lower() + "-x-" + self.short_name + self.postfix + self.postfix_pickle
-        pickle.dump(x, open(path, 'wb'))
-        print("saved: " + path)
-
     def encode_sentences(self, lang, sentence_array):
         pass
 
 
-import os
+g = tf.Graph()
+with g.as_default():
+    text_input = tf.placeholder(dtype=tf.string, shape=[None])
+    en_de_embed = hub.Module("https://tfhub.dev/google/universal-sentence-encoder-large/3")
+    embedded_text = en_de_embed(text_input)
+    init_op = tf.group([tf.global_variables_initializer(), tf.tables_initializer()])
+    g.finalize()
+# Initialize session.
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+session = tf.Session(config=config, graph=g)
+session.run(init_op)
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-os.environ['LASER'] = dir_path
-os.environ['LASER'] += "/LASER"
-print(os.environ['LASER'])
 
-from LASER.source.embed import SentenceEncoder as LaserSentenceEncoder
+class GoogleUse(Encoder):
+    def __init__(self):
+        super(GoogleUse, self).__init__()
+        self.name = "Google Universal Sentence Encoder"
+        self.short_name = "google-use"
 
 
+    def encode_sentences(self, worklist):
+        # Define result and  batchsize
+        embeddings = None
+        BATCH_SIZE_ENCODER = 512
+        # Iterate over the stuff
+        for i in range(0, len(worklist), BATCH_SIZE_ENCODER):
+            print(i, len(worklist))
+            batch = worklist[i:i + BATCH_SIZE_ENCODER]  # the result might be shorter than batchsize at the end
+            # do stuff with batch
+            res = session.run(embedded_text, feed_dict={text_input: batch})
+            if embeddings is None:
+                embeddings = res
+            else:
+                embeddings = np.append(embeddings, res, axis=0)
+
+        return embeddings
+
+    def encode_sentence(self, sentence):
+        res = session.run(embedded_text, feed_dict={text_input: [sentence]})
+        return res[0]
 
 
 class LASEREncoder(Encoder):
@@ -92,7 +107,7 @@ class LASEREncoder(Encoder):
         super(LASEREncoder, self).__init__()
         self.name = "LASER"
         self.short_name = "laser"
-        print(self.name)
+        # print(self.name)
         self.path = path
         # init model
         self.model = LaserSentenceEncoder(self.path,
@@ -126,7 +141,7 @@ class LASEREncoder(Encoder):
         result = self.model.encode_sentences([sentence_string])
         return result[0]
 
-    def encode_sentences(self, lang, sentences_array):
+    def encode_sentences(self, sentences_array):
         """
         Encode sentences
         """
