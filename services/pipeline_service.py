@@ -36,8 +36,8 @@ def handle_crawler_file(project_uuid, file_path):
     result["file_path"] = file_path
     result["project_uuid"] = project_uuid
 
-    es.index(index="document-index", doc_type="document", id=id, body=result)
-    return
+    response = es.index(index="document-index", doc_type="document", id=id, body=result)
+    return response
 
 def handle_folder(project_uuid, folder_path):
     # get all files in the folder

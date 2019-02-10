@@ -5,14 +5,14 @@ from flask_restplus import Namespace, Resource
 from werkzeug.utils import secure_filename
 from services.files_service import *
 #from config.config import FOLDER_SEARCH
-from services.crawler_service import execute_crawler
+from services.crawler_service import execute_crawler, stop_crawler
 from services.pipeline_service import handle_file
 
 
 api = Namespace('Crawler', description='All functionalities of the crawler service')
 
 
-@api.route('/project/<string:projectUUID>/crawl', methods=['GET','POST'])
+@api.route('/project/<string:projectUUID>/crawl', methods=['GET'])
 @api.doc('Execute crawling articles')
 @api.response(200, 'Crawling new articles')
 class ExecuteCrawler(Resource):
@@ -55,27 +55,20 @@ class ExecuteCrawler(Resource):
         # return jsonify(response)
 
 
-# @api.route('/project/<string:projectUUID>/files', methods=['POST'])
-# @api.doc('Upload Project Files')
-# class UploadProjectFiles(Resource):
-#     def post(self, projectUUID):
-#         """
-#         Upload files to a project
-#         :param projectUUID:
-#         :return:
-#         """
-#         if not os.path.exists(FOLDER_SEARCH + projectUUID):
-#             os.makedirs(FOLDER_SEARCH + projectUUID)
+@api.route('/project/<string:projectUUID>/crawl', methods=['POST'])
+@api.doc('Stop crawling')
+class StopCrawler(Resource):
+    def post(self, projectUUID):
+        """
+        Stop crawling process
+        :param projectUUID:
+        :return:
+        """
+        stop_crawler()
 
-#         for file in request.files.getlist('filepond'):
-#             filename = secure_filename(file.filename)
-#             file_path = os.path.join(FOLDER_SEARCH + projectUUID, filename)
-#             file.save(file_path)
-#             # Start pipeline
-#             handle_file(projectUUID, file_path)
-
-#         return '', 204
-
+        return {
+            'message':'Crawler is stopped',
+        }, 200
 
 # @api.route('/project/<string:projectUUID>/files', methods=['GET'])
 # @api.doc('Handle Project Files')

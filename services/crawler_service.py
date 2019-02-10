@@ -70,3 +70,8 @@ def execute_crawler(request,projectUUID):
     # Remove the parsed request file
     remove_project_request_file_cmd = ('rm -f /tmp/project_request.json')
     os.system(remove_project_request_file_cmd)
+
+def stop_crawler():
+    # This will stop  multiple crawlers on this server
+    stop_crawler_cmd = ('ps -A | grep scrapy | awk \'{print $1}\' | xargs kill -9 $1')
+    os.system(stop_crawler_cmd)
