@@ -57,6 +57,7 @@ class ExecuteCrawler(Resource):
 
 @api.route('/project/<string:projectUUID>/crawl', methods=['POST'])
 @api.doc('Stop crawling')
+@api.response(208, 'Stop crawling')
 class StopCrawler(Resource):
     def post(self, projectUUID):
         """
@@ -68,7 +69,7 @@ class StopCrawler(Resource):
 
         return {
             'message':'Crawler is stopped',
-        }, 204
+        }, 208
 
 # @api.route('/project/<string:projectUUID>/files', methods=['GET'])
 # @api.doc('Handle Project Files')
