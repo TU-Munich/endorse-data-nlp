@@ -68,7 +68,7 @@ class StopCrawler(Resource):
 
         return {
             'message':'Crawler is stopped',
-        }, 200
+        }, 204
 
 # @api.route('/project/<string:projectUUID>/files', methods=['GET'])
 # @api.doc('Handle Project Files')
