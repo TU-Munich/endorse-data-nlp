@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from flask_restplus import Api
 from flask_socketio import SocketIO, emit
 from threading import Lock
+from config.config import FOLDER
 import random, logging, json
 import os
 from apis.v1.router_user import UserDbHandler
@@ -57,11 +58,11 @@ def get(index, type, id):
     return jsonify(result)
 
 
-init_initial_project(es)
+init_initial_project()
+
 
 @socketio.on('connect')
 def test_connect():
-
     logging.debug('Client connected')
     print('Client connected')
     global thread
@@ -69,46 +70,48 @@ def test_connect():
         if thread is None:
             thread = socketio.start_background_task(target=background_thread)
 
+
 def background_thread():
-
-
-    with open('/usr/src/app/quotes.json') as json_data:
+    # What is this quotes file?
+    with open(FOLDER + 'quotes.json') as json_data:
         q = json.load(json_data)
         length = len(q['quotes'])
     while True:
         socketio.sleep(15)
-        i = random.randint(0, length-1)
+        i = random.randint(0, length - 1)
         socketio.emit('server_response',
-                    {'data': q['quotes'][i]})
-        test_info={
-            'quote':'***** New Artcile Found! *****',
-            'author':'System'
+                      {'data': q['quotes'][i]})
+        test_info = {
+            'quote': '***** New Artcile Found! *****',
+            'author': 'System'
         }
         try:
             # Try to read the project_request file if it existed, or to see whether the folder existed or not
-            article_list = [] #Everytime update a new article_list for clean up records from other project
-            with open('/tmp/project_request.json') as f:
+            article_list = []  # Everytime update a new article_list for clean up records from other project
+            with open(FOLDER + 'tmp/project_request.json') as f:
                 data = json.load(f)
             projectID = data['projectID']
             timestamp = data['timestamp']
-            reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
+            reutersFolderPath = str(
+                FOLDER + "/projects/" + str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
             articlePaths = read_all_files(reutersFolderPath)
             for articlePath in articlePaths:
                 with open(articlePath) as article:
                     data = json.load(article)
                 # title = data['title']
                 # source = data['url']
-                if title not in article_list:
+                # TODO what is this?
+                if 'title' not in article_list:
                     article_list.append(data)
-                    socketio.emit('server_response',{'data': test_info})
+                    socketio.emit('server_response', {'data': test_info})
                     continue
-            socketio.emit('updated_article_list',{'data': article_list})
+            socketio.emit('updated_article_list', {'data': article_list})
 
         except Exception as ee:
             print(str(ee))
 
 
-#def update_progress():
+# def update_progress():
 
 
 
@@ -116,8 +119,8 @@ def background_thread():
 def test_disconnect():
     logging.debug('Client disconnected')
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # Create a new admin if not present
     create_admin = os.environ.get("CREATE_ADMIN", None)
     admin_password = os.environ.get("ADMIN_PASSWORD", None)
@@ -125,7 +128,6 @@ if __name__ == '__main__':
     # print(admin_password)
     if create_admin and admin_password:
         # ADMIN
-
         data = {
             "user_name": "admin",
             "name": "admin",
