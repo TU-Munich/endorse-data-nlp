@@ -9,6 +9,7 @@ import random, logging, json
 import os
 from apis.v1.router_user import UserDbHandler
 from services.elastic_search import es
+from services.files_service import *
 
 from apis.v1 import blueprint as v1
 
@@ -69,13 +70,41 @@ def test_connect():
             thread = socketio.start_background_task(target=background_thread)
 
 def background_thread():
-    with open('quotes.json') as json_data:
+    
+    
+    with open('/usr/src/app/quotes.json') as json_data:
         q = json.load(json_data)
-        while True:
-            socketio.sleep(7)
-            i = random.randint(0, len(q['quotes']))
-            socketio.emit('server_response',
-                        {'data': q['quotes'][i]})
+        length = len(q['quotes'])
+    while True:
+        socketio.sleep(15)
+        i = random.randint(0, length-1)
+        socketio.emit('server_response',
+                    {'data': q['quotes'][i]})
+        test_info={
+            'quote':'***** New Artcile Found! *****',
+            'author':'System'
+        }
+        try:
+            # Try to read the project_request file if it existed, or to see whether the folder existed or not
+            article_list = [] #Everytime update a new article_list for clean up records from other project
+            with open('/tmp/project_request.json') as f:
+                data = json.load(f)
+            projectID = data['projectID']
+            timestamp = data['timestamp']
+            reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
+            articlePaths = read_all_files(reutersFolderPath)
+            for articlePath in articlePaths:
+                with open(articlePath) as article:
+                    data = json.load(article)
+                title = data['title']
+                if title not in article_list:
+                    article_list.append(title)
+                    socketio.emit('server_response',{'data': test_info})
+                    continue
+            socketio.emit('updated_article_list',{'data': article_list})
+
+        except Exception as ee:
+            print(str(ee))
             
 
 #def update_progress():
