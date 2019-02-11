@@ -81,25 +81,25 @@ def background_thread():
         i = random.randint(0, length-1)
         socketio.emit('server_response', {'data': q['quotes'][i]})
         socketio.sleep(5)
-        
-        try:
-            # Try to read the project_request file if it existed, or to see whether the folder existed or not
-            article_list = [] #Everytime update a new article_list for clean up records from other project
-            with open('/tmp/project_request.json') as f:
-                data = json.load(f)
-            projectID = data['projectID']
-            timestamp = data['timestamp']
-            reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
-            articlePaths = read_all_files(reutersFolderPath)
-            for articlePath in articlePaths:
-                with open(articlePath) as article:
-                    data = json.load(article)
-                article_list.append(data)
-                continue
-            socketio.emit('updated_article_list',{'data': article_list})
-            socketio.sleep(10)
-        except Exception as ee:
-            print(str(ee))
+        if(os.path.exists('/tmp/project_request.json')):
+            try:
+                # Try to read the project_request file if it existed, or to see whether the folder existed or not
+                article_list = [] #Everytime update a new article_list for clean up records from other project
+                with open('/tmp/project_request.json') as f:
+                    data = json.load(f)
+                projectID = data['projectID']
+                timestamp = data['timestamp']
+                reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
+                articlePaths = read_all_files(reutersFolderPath)
+                for articlePath in articlePaths:
+                    with open(articlePath) as article:
+                        data = json.load(article)
+                    article_list.append(data)
+                    continue
+                socketio.emit('updated_article_list',{'data': article_list})
+                socketio.sleep(10)
+            except Exception as ee:
+                print(str(ee))
 
 @socketio.on('close_crawler')
 def close_crawler():
