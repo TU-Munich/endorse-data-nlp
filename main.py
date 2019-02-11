@@ -80,7 +80,7 @@ def background_thread():
         
         i = random.randint(0, length-1)
         socketio.emit('server_response', {'data': q['quotes'][i]})
-    
+        socketio.sleep(5)
         
         try:
             # Try to read the project_request file if it existed, or to see whether the folder existed or not
@@ -97,7 +97,7 @@ def background_thread():
                 article_list.append(data)
                 continue
             socketio.emit('updated_article_list',{'data': article_list})
-            socketio.sleep(15)
+            socketio.sleep(10)
         except Exception as ee:
             print(str(ee))
 
