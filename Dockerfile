@@ -52,6 +52,11 @@ ADD . /usr/src/app
 
 #COPY . .
 EXPOSE 3002
+CMD [ "cd ./services/similarity/LASER" ]
+CMD [ "export LASER=$(pwd)" ]
+CMD [ "bash  ./install_models.sh" ]
+CMD [ "bash ./install_external_tools.sh" ]
+CMD [ "cd ../../.." ]
 RUN [ "chmod", "+x", "start.sh" ]
 CMD [ "sh", "./start.sh" ]
 CMD [ "python", "./main.py" ]
