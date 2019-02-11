@@ -3,7 +3,7 @@ from flask import Flask, Blueprint, url_for, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restplus import Api
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, disconnect
 from threading import Lock
 import random, logging, json
 import os
@@ -77,7 +77,7 @@ def background_thread():
         q = json.load(json_data)
         length = len(q['quotes'])
     while True:
-        socketio.sleep(15)
+        
         i = random.randint(0, length-1)
         socketio.emit('server_response', {'data': q['quotes'][i]})
     
@@ -97,18 +97,14 @@ def background_thread():
                 article_list.append(data)
                 continue
             socketio.emit('updated_article_list',{'data': article_list})
-            
-
+            socketio.sleep(15)
         except Exception as ee:
             print(str(ee))
-            
-
-#def update_progress():
-
-
 
 @socketio.on('close_crawler')
 def close_crawler():
+    print('close crawler')
+    disconnect()
     
 
 if __name__ == '__main__':
