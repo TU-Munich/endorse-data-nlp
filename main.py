@@ -59,15 +59,16 @@ def get(index, type, id):
 
 init_initial_project(es)
 
-@socketio.on('connect')
+@socketio.on('start_crawling')
 def test_connect():
     
-    logging.debug('Client connected')
-    print('Client connected')
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(target=background_thread)
+    # logging.debug('Client connected')
+    # print('Client connected')
+    # global thread
+    # with thread_lock:
+    #     if thread is None:
+    #         thread = socketio.start_background_task(target=background_thread)
+    socketio.start_background_task(target=background_thread)
 
 def background_thread():
     
@@ -78,12 +79,9 @@ def background_thread():
     while True:
         socketio.sleep(15)
         i = random.randint(0, length-1)
-        socketio.emit('server_response',
-                    {'data': q['quotes'][i]})
-        test_info={
-            'quote':'***** New Artcile Found! *****',
-            'author':'System'
-        }
+        socketio.emit('server_response', {'data': q['quotes'][i]})
+    
+        
         try:
             # Try to read the project_request file if it existed, or to see whether the folder existed or not
             article_list = [] #Everytime update a new article_list for clean up records from other project
@@ -96,13 +94,10 @@ def background_thread():
             for articlePath in articlePaths:
                 with open(articlePath) as article:
                     data = json.load(article)
-                # title = data['title']
-                # source = data['url']
-                # if title not in article_list:
                 article_list.append(data)
-                #socketio.emit('server_response',{'data': test_info})
                 continue
             socketio.emit('updated_article_list',{'data': article_list})
+            
 
         except Exception as ee:
             print(str(ee))
@@ -112,9 +107,9 @@ def background_thread():
 
 
 
-@socketio.on('disconnect', namespace='/crawl')
-def test_disconnect():
-    logging.debug('Client disconnected')
+@socketio.on('close_crawler')
+def close_crawler():
+    
 
 if __name__ == '__main__':
     
