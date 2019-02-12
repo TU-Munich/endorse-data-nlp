@@ -9,7 +9,7 @@ from config.config import FOLDER
 os.environ['LASER'] = os.path.dirname(os.path.realpath(__file__)) + "/LASER"
 
 from services.similarity.Encoders import LASEREncoder
-from services.similarity.Encoders import GoogleUse
+# from services.similarity.Encoders import GoogleUse
 from services.similarity.Encoders import operations
 
 
@@ -31,7 +31,7 @@ try:
     print("successfuly loaded ", index.ntotal, " entries")
 except:
     print("failed to load faiss index")
-    index = faiss.IndexFlatL2(d)  # build the index
+    index = faiss.IndexFlat(d)  # build the index
 
 shadow_index = {}
 try:
@@ -40,21 +40,29 @@ try:
     shadow_index = {}
     for k, v in shadow_index_string.items():
         shadow_index[int(k)] = v
+    print("successfuly loaded ", len(shadow_index), " entries")
 except:
     print("failed to load shadow index")
     shadow_index = {}
 
 
 def add_vector_to_index(id, vector):
+    """
+    Add a new vector to the index with the id
+    :param id:
+    :param vector:
+    :return:
+    """
     mutex.acquire()
     try:
-        # print(vector)
-        # print(np.array([vector]).shape)
+        # add to the faiss index
         index.add(np.array([vector]))
         faiss.write_index(index, FOLDER+"laser.index")
-        json.dump(shadow_index, open(FOLDER+"laser.json", "w"))
         print("Amount of elements in the index:", index.ntotal)
+        # add to the shadow index
         shadow_index[index.ntotal - 1] = id
+        json.dump(shadow_index, open(FOLDER+"laser.json", "w"))
+        print("Amount of elements in the shadow index:", len(shadow_index))
     finally:
         mutex.release()
 
@@ -74,12 +82,31 @@ def find_similar(sentence_vector, k=10):
     for count, ind in enumerate(I[0]):
         # don't go for things that are not in the index
         if ind > 0:
-            print(ind)
-            print(D[0][count])
+            print("Index",ind)
+            print("Count", D[0][count])
             results.append({
                 "id": shadow_index[ind],
-                "similarity": D[0][count].item()
+                "similarity": D[0][count].item(),
             })
+
+    from sklearn.manifold import TSNE
+
+    print("Display", index.display())
+
+    # print("Reconstruct", index.reconstruct(int(I[0, 0])))
+
+
+    vecs = []
+    for count, ind in enumerate(I[0]):
+        if ind > 0:
+            vecs.append(index.reconstruct(int(I[0, count])))
+
+    print(vecs)
+    X_embedded = TSNE(n_components=2).fit_transform(vecs)
+    for i, xy in enumerate(X_embedded):
+        results[i]['x'] = xy[0].item()
+        results[i]['y'] = xy[1].item()
+
 
     return results
 
