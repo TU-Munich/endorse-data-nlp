@@ -76,7 +76,7 @@ class ReutersSpider(scrapy.Spider):
                 
                 current_article = {
                     'title':title,
-                    'source': 'Reuters'
+                    'source': 'Reuters',
                     'url': article_url,
                     'content': content
                     }
