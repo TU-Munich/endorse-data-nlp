@@ -76,12 +76,14 @@ def background_thread():
     with open('/usr/src/app/quotes.json') as json_data:
         q = json.load(json_data)
         length = len(q['quotes'])
+    foldersPath = []
     while True:
         
         i = random.randint(0, length-1)
         socketio.emit('server_response', {'data': q['quotes'][i]})
         socketio.sleep(5)
         if(os.path.exists('/tmp/project_request.json')):
+            
             try:
                 # Try to read the project_request file if it existed, or to see whether the folder existed or not
                 article_list = [] #Everytime update a new article_list for clean up records from other project
@@ -89,15 +91,21 @@ def background_thread():
                     data = json.load(f)
                 projectID = data['projectID']
                 timestamp = data['timestamp']
-                reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
-                nytFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp))
-                #articlePaths = read_all_files(reutersFolderPath)
-                articlePaths = read_all_files(nytFolderPath)
-                for articlePath in articlePaths:
-                    with open(articlePath) as article:
-                        data = json.load(article)
-                    article_list.append(data)
-                    continue
+                query_url = data['query_url']
+                if(query_url['Reuters'] !=''):
+                    foldersPath.append(str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp)))
+                if(query_url['NYT'] !=''):
+                    foldersPath.append(str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp)))
+                # reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
+                # nytFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp))
+                # articlePaths = read_all_files(reutersFolderPath)
+                for folderPath in foldersPath:
+                    articlePaths = read_all_files(folderPath)
+                    for articlePath in articlePaths:
+                        with open(articlePath) as article:
+                            data = json.load(article)
+                        article_list.append(data)
+                        continue
                 socketio.emit('updated_article_list',{'data': article_list})
                 socketio.sleep(10)
             except Exception as ee:
