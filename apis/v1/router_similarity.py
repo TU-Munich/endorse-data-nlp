@@ -1,11 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_restplus import Namespace, Resource, fields
-from services.similarity.similarity_service import add_documents_to_index, find_document_in_index
+from services.similarity.similarity_service import add_sentences_to_index, find_sentences_in_index
 
 api = Namespace("Similarity API", description="The similarity api endpoints")
 
-resource_fields = api.model('Resource', {
+sentences_fields = api.model('Resource', {
     'sentences': fields.List(fields.String),
+})
+sentence_field = api.model('Resource', {
+    'sentence': fields.String,
 })
 
 
@@ -15,7 +18,7 @@ class Sentences(Resource):
         print(api.payload)
         return "success", 201
 
-    @api.expect(resource_fields)
+    @api.expect(sentences_fields)
     def post(self, id):
         """
         Create a new document in the index
@@ -26,9 +29,16 @@ class Sentences(Resource):
         if "sentences" not in payload:
             return {"msg": "no sentences"}, 400
 
-        results = add_documents_to_index(id, payload["sentences"])
-        return jsonify(results)
+        document_results, _, sentence_results = add_sentences_to_index(id, payload["sentences"])
 
+        response = {
+            "document_results": document_results,
+            "sentence_results": sentence_results
+        }
+
+        return jsonify(response)
+
+    @api.expect(sentence_field)
     def put(self, id):
         """
         find similar documents
@@ -40,6 +50,29 @@ class Sentences(Resource):
         if "sentence" not in payload:
             return {"msg": "no sentence"}, 400
 
-        result = find_document_in_index(payload["sentence"])
+        result = find_sentences_in_index(payload["sentence"])
+        print(result)
+        return jsonify(result)
+
+
+@api.route("/documents/<id>")
+class Sentences(Resource):
+    def get(self):
+        print(api.payload)
+        return "success", 201
+
+    @api.expect(sentence_field)
+    def put(self, id):
+        """
+        find similar documents
+        :param id:
+        :return:
+        """
+        payload = request.get_json(force=True)
+
+        if "sentence" not in payload:
+            return {"msg": "no sentence"}, 400
+
+        result = find_sentences_in_index(payload["sentence"])
         print(result)
         return jsonify(result)
