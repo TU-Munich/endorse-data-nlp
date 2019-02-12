@@ -7,7 +7,7 @@ from services.files_service import *
 from services.tika_service import *
 from services.vader_service import *
 from services.elastic_search import es
-from services.similarity.similarity_service import add_documents_to_index
+from services.similarity.similarity_service import add_sentences_to_index
 
 
 def handle_crawler_folder(project_uuid, folder_path):
@@ -20,17 +20,18 @@ def handle_crawler_folder(project_uuid, folder_path):
 
     return
 
+
 def handle_crawler_file(project_uuid, file_path):
-    # create a hashname from the filepath
+    # create a hashname from the file path
     id = hashlib.md5(str(file_path).encode("utf8")).hexdigest()
     # open file with tika
-    #parsed_doc = parse_file(file_path)
+    # parsed_doc = parse_file(file_path)
     with open(file_path, 'r') as f:
         loaded_json = json.load(f)
         # run the nlp pipeline on text
         result = handle_document(loaded_json['content'])
-        #print(result)
-    
+        # print(result)
+
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
@@ -39,6 +40,7 @@ def handle_crawler_file(project_uuid, file_path):
 
     response = es.index(index="document-index", doc_type="document", id=id, body=result)
     return response
+
 
 def handle_folder(project_uuid, folder_path):
     # get all files in the folder
@@ -85,7 +87,7 @@ def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True):
     return
 
 
-def handle_document(id, parsed_document):
+def handle_document(id, parsed_document, similarity=False):
     """
     Take a document and classify the language of the document
     with the google lang classifier
@@ -111,10 +113,13 @@ def handle_document(id, parsed_document):
     # sentiment
     result["sentiment"] = sentences_sentiment(result["sentences"])
     # similarity
-    result["similarity"] = add_documents_to_index(id, result["sentences"])
+    if similarity:
+        document_results, document_vector, sentence_results = add_sentences_to_index(id, result["sentences"])
+        result["similarity_document"] = document_results
+        result["similarity_sentences"] = sentence_results
+        result["document_vector"] = document_vector.tolist()
     # Part of Speech tagging
     result['pos'] = doc_pos(doc)
     # Named entity recognition
     result['ner'] = doc_ner(doc)
-
     return result

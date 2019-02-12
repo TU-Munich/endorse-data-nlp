@@ -1,6 +1,6 @@
 import os
 import datetime
-from config.config import FOLDER
+from config.config import FOLDER, ROOT_FOLDER
 from services.pipeline_service import handle_crawler_folder
 import logging
 import json
@@ -49,9 +49,9 @@ def execute_crawler(request,projectUUID):
     if not os.path.exists(FOLDER + projectUUID):
             os.makedirs(FOLDER + projectUUID)
     timestamp =  datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-    REUTERS_Path = "/data/projects/" + projectUUID + "/crawler" + "/Reuters" + "/" + str(timestamp)
+    REUTERS_Path = FOLDER + projectUUID + "/crawler" + "/Reuters" + "/" + str(timestamp)
     logging.debug("\nReuters_path:%s\n" %REUTERS_Path)
-    crawler_folder_path = ('/usr/src/app/crawler')
+    crawler_folder_path = (ROOT_FOLDER + 'crawler')
     
 
     # Parse the request and store into file for crawler 
