@@ -32,7 +32,7 @@ def handle_crawler_file(project_uuid, file_path):
     with open(file_path, 'r') as f:
         loaded_json = json.load(f)
         # run the nlp pipeline on text
-        result = handle_document(loaded_json['content'])
+        result = handle_document(project_uuid, id, loaded_json['content'])
         # print(result)
 
     # remove content
@@ -63,7 +63,7 @@ def handle_file(project_uuid, file_path):
     print("FILE PATH", file_path)
     parsed_doc = parse_file(file_path)
     # run the nlp pipeline on text
-    result = handle_document(id, parsed_doc["content"])
+    result = handle_document(project_uuid, id, parsed_doc["content"])
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
