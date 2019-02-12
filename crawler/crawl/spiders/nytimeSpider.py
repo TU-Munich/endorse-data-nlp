@@ -3,6 +3,8 @@ import scrapy
 from selenium import webdriver
 import time
 import datetime
+import json
+import logging
 
 
 
@@ -100,11 +102,10 @@ class NYTimesSpider(scrapy.Spider):
                         'url': article_url,
                         'content': content
                         }
-                    yield current_article
-
-                    self.file_write(current_article)
-                    single_article_driver.close()
-                    continue
+                yield current_article
+                self.file_write(current_article)
+                single_article_driver.close()
+                continue
 
             except Exception as ee:
                 print(str(ee))
