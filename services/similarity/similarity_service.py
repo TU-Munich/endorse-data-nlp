@@ -108,7 +108,8 @@ class FaissIndex():
                 print("Count", D[0][count])
                 res = {}
                 # Add the similarity to the result
-                res["similarity"] = round(D[0][count].item(),2)
+                res["similarity"] = round(D[0][count].item(), 2)
+                res["r"] = min(0.1, 5 - round(D[0][count].item(), 2))
                 # add the sentence to the result if the sentence is stored in the index
                 if self.create_ind2sent:
                     res["sentence"] = self.ind2sent[ind]
@@ -130,18 +131,13 @@ class FaissIndex():
             print("RESULTS", results)
             print("TSNE", X_embedded)
             for i, xy in enumerate(X_embedded):
-                results[i]['x'] = round(xy[0].item(),2)
-                results[i]['y'] = round(xy[1].item(),2)
+                results[i]['x'] = round(xy[0].item(), 2)
+                results[i]['y'] = round(xy[1].item(), 2)
 
         return results
 
 
-# Init the sentence index
-SentenceIndex = FaissIndex("sentences", 1024, create_ind2id=True, create_ind2sent=True)
-DocumentIndex = FaissIndex("documents", 1024, create_ind2id=True, create_ind2sent=False)
-
-
-def add_sentence_to_index(document_UUID, sentence, return_vector=False):
+def add_sentence_to_index(SentenceIndex, document_UUID, sentence, return_vector=False):
     # encode the sentence
     sentence_vector = enc.encode_sentence(sentence)
     # create a hash for a sentence
@@ -156,7 +152,7 @@ def add_sentence_to_index(document_UUID, sentence, return_vector=False):
     return result
 
 
-def add_sentences_to_index(document_UUID, sentences):
+def add_sentences_to_index(DocumentIndex, SentenceIndex, document_UUID, sentences):
     sentence_results = []
     sentences_vectors = enc.encode_sentences(sentences)
     # iterate over the sentence
@@ -172,7 +168,7 @@ def add_sentences_to_index(document_UUID, sentences):
         sentence_results.append(result)
     # Calc document vector
     document_vector = calculate_document_vector(sentences_vectors)
-    document_result = add_document_vector_to_index(document_UUID, document_UUID, document_vector)
+    document_result = add_document_vector_to_index(DocumentIndex, document_UUID, document_UUID, document_vector)
     # Generate the results
     return document_result, document_vector, sentence_results
 
@@ -182,11 +178,18 @@ def calculate_document_vector(sentence_vectors):
     return document_vector
 
 
-def add_document_vector_to_index(document_name, document_UUID, document_vector):
+def add_document_vector_to_index(DocumentIndex, document_name, document_UUID, document_vector):
     return DocumentIndex.add_vector_to_index(document_name, document_UUID, document_vector)
 
 
-def find_sentences_in_index(sentence, k=10):
+def find_sentences_in_index(SentenceIndex, sentence, k=10):
     sentence_vector = enc.encode_sentence(sentence)
     results = SentenceIndex.find_similar(sentence_vector, k=k)
+    return results
+
+
+def find_document_in_index(DocumentIndex, document_uuid, k=10):
+    # TODO Get document and document vector
+    document_vector = None
+    results = DocumentIndex.find_similar(document_vector, k=k)
     return results

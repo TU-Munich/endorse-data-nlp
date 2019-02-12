@@ -39,23 +39,23 @@ def parse_request(projectID, timestamp,request):
     with open("/tmp" + "/project_request.json", "w") as outfile:
         json.dump(data, outfile)
 
-def execute_crawler(request,projectUUID):
+def execute_crawler(request,project_uuid):
     logging.basicConfig(level=logging.DEBUG,  
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',  
                     datefmt='%a, %d %b %Y %H:%M:%S',  
                     filename='/tmp/test.log',  
                     filemode='w')  
     
-    if not os.path.exists(FOLDER + projectUUID):
-            os.makedirs(FOLDER + projectUUID)
+    if not os.path.exists(FOLDER + project_uuid):
+            os.makedirs(FOLDER + project_uuid)
     timestamp =  datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-    REUTERS_Path = FOLDER + projectUUID + "/crawler" + "/Reuters" + "/" + str(timestamp)
+    REUTERS_Path = FOLDER + project_uuid + "/crawler" + "/Reuters" + "/" + str(timestamp)
     logging.debug("\nReuters_path:%s\n" %REUTERS_Path)
     crawler_folder_path = (ROOT_FOLDER + 'crawler')
     
 
     # Parse the request and store into file for crawler 
-    parse_request(projectUUID, timestamp, request)
+    parse_request(project_uuid, timestamp, request)
     #logging.debug("\nInside the execute crawl funciton parsed_query_url:%s\n" %parsed_query_url["Reuters"])
    
     execute_reuters_crawler_cmd = ('scrapy crawl reutersCrawler')
@@ -65,7 +65,7 @@ def execute_crawler(request,projectUUID):
     if("Reuters" in request['source']):
         os.system(execute_reuters_crawler_cmd)
         #logging.debug("\nRetuers is selected, Reuters_path:%s\n" %REUTERS_Path)
-        handle_crawler_folder(projectUUID,REUTERS_Path)
+        handle_crawler_folder(project_uuid,REUTERS_Path)
 
     # Remove the parsed request file
     remove_project_request_file_cmd = ('rm -f /tmp/project_request.json')

@@ -11,8 +11,10 @@ import os
 from apis.v1.router_user import UserDbHandler
 from services.elastic_search import es
 from services.files_service import *
-
 from apis.v1 import blueprint as v1
+import tika
+# Start Tika VM
+tika.initVM()
 
 # Env variables
 from config.initial import init_initial_project
@@ -33,7 +35,7 @@ cors = CORS(app)
 app.register_blueprint(v1)
 socketio = SocketIO(app)
 
-INIT = os.environ.get('INIT', False)
+INIT = os.environ.get('INIT', True)
 
 
 # Serve the frontend

@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask_restplus import Api
 from .router_nlp import api as spacy_api
-from .route_files import api as files_api
+from .router_files import api as files_api
 from .router_tika import api as tika_api
 from .router_generic import api as generic_api
 from .router_pipeline import api as pipeline_api

@@ -7,9 +7,9 @@ from services.elastic_search import es
 api = Namespace('Project', description='All functionalities of the project')
 
 
-@api.route('/project/<string:projectUUID>/overview')
+@api.route('/project/<string:project_uuid>/overview')
 class ProjectData(Resource):
-    def get(self, projectUUID, path):
+    def get(self, project_uuid, path):
         """
         Get a aggregated overview of project data:
         """

@@ -10,100 +10,100 @@ from services.pipeline_service import handle_file
 api = Namespace('Files', description='All functionalities of the project file service')
 
 
-@api.route('/project/<string:projectUUID>/file', methods=['POST'])
+@api.route('/project/<string:project_uuid>/file', methods=['POST'])
 @api.doc('Upload Project Files')
 @api.response(200, 'Upload new files')
 class UploadProjectFile(Resource):
-    def post(self, projectUUID):
+    def post(self, project_uuid):
         """
         Upload file to a project
-        :param projectUUID:
+        :param project_uuid:
         :return:
         """
         response = {}
-        if not os.path.exists(FOLDER + projectUUID):
-            os.makedirs(FOLDER + projectUUID)
+        if not os.path.exists(FOLDER + project_uuid):
+            os.makedirs(FOLDER + project_uuid)
         for file in request.files.getlist('filepond'):
             filename = secure_filename(file.filename)
-            file_path = os.path.join(FOLDER + projectUUID, filename)
+            file_path = os.path.join(FOLDER + project_uuid, filename)
             file.save(file_path)
             # Start pipeline
-            result = handle_file(projectUUID, file_path)
+            result = handle_file(project_uuid, file_path)
             response = { "name": filename, "result": result }
         return jsonify(response)
 
 
-@api.route('/project/<string:projectUUID>/files', methods=['POST'])
+@api.route('/project/<string:project_uuid>/files', methods=['POST'])
 @api.doc('Upload Project Files')
 class UploadProjectFiles(Resource):
-    def post(self, projectUUID):
+    def post(self, project_uuid):
         """
         Upload files to a project
-        :param projectUUID:
+        :param project_uuid:
         :return:
         """
-        if not os.path.exists(FOLDER + projectUUID):
-            os.makedirs(FOLDER + projectUUID)
+        if not os.path.exists(FOLDER + project_uuid):
+            os.makedirs(FOLDER + project_uuid)
 
         for file in request.files.getlist('filepond'):
             filename = secure_filename(file.filename)
-            file_path = os.path.join(FOLDER + projectUUID, filename)
+            file_path = os.path.join(FOLDER + project_uuid, filename)
             file.save(file_path)
             # Start pipeline
-            handle_file(projectUUID, file_path)
+            handle_file(project_uuid, file_path)
 
         return '', 204
 
 
-@api.route('/project/<string:projectUUID>/files', methods=['GET'])
+@api.route('/project/<string:project_uuid>/files', methods=['GET'])
 @api.doc('Handle Project Files')
 class HandleProjectFiles(Resource):
-    def get(self, projectUUID):
+    def get(self, project_uuid):
         """
         Read all files of a project
-        :param projectUUID:
+        :param project_uuid:
         :return:
         """
-        results = read_all_files(FOLDER + projectUUID)
+        results = read_all_files(FOLDER + project_uuid)
         return results
 
 
-@api.route('/project/<string:projectUUID>/files/<path:path>', methods=['GET', 'POST'])
+@api.route('/project/<string:project_uuid>/files/<path:path>', methods=['GET', 'POST'])
 @api.doc('Handle Project Files')
 class HandleProjectFile(Resource):
     @api.response(200, 'Read files in a directory')
-    def get(self, projectUUID, path):
+    def get(self, project_uuid, path):
         """
         read a specific path of files in the project
-        :param projectUUID:
+        :param project_uuid:
         :param path:
         :return:
         """
-        results = read_all_files(FOLDER + projectUUID + "/" + path)
+        results = read_all_files(FOLDER + project_uuid + "/" + path)
         return results
 
     @api.response(204, 'File deleted')
-    def delete(self, projectUUID, path):
+    def delete(self, project_uuid, path):
         """
         Delete a file within a project
-        :param projectUUID:
+        :param project_uuid:
         :param path:
         :return:
         """
-        for hgx in glob.glob(FOLDER + projectUUID + "/" + path):
+        for hgx in glob.glob(FOLDER + project_uuid + "/" + path):
             os.remove(hgx)
         return '', 204
 
 
-@api.route('/project/<string:projectUUID>/files/download/<path:path>', methods=['GET', 'POST'])
+@api.route('/project/<string:project_uuid>/files/download/<path:path>', methods=['GET', 'POST'])
 @api.doc('Download Project Files')
 class DownloadProjectFile(Resource):
     @api.response(200, 'Download a file')
-    def get(self, projectUUID, path):
+    def get(self, project_uuid, path):
         """
         Download a specific file
-        :param projectUUID:
+        :param project_uuid:
         :param path:
         :return:
         """
-        return send_file(FOLDER + projectUUID + "/" + path, as_attachment=True)
+        return send_file(FOLDER + project_uuid + "/" + path, as_attachment=True)
