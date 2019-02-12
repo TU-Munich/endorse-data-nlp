@@ -1,6 +1,9 @@
 import hashlib
 import time
 import json
+
+import os
+
 from services.langdetec_service import *
 from services.spacy_service import *
 from services.files_service import *
@@ -65,6 +68,8 @@ def handle_file(project_uuid, file_path):
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
     result["file_path"] = file_path
+    # get the filename
+    result["file_name"] = os.path.basename(file_path)
     result["project_uuid"] = project_uuid
     response = es.index(index="document-index", doc_type="document", id=id, body=result)
     return response
