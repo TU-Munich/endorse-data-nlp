@@ -9,15 +9,15 @@ class WPSpider(scrapy.Spider):
     name = "washingtonPostCrawler"
     start_urls = ['https://www.washingtonpost.com/newssearch/?datefilter=7%20Days&query=abu&sort=Date']
     base_url = 'https://www.washingtonpost.com/newssearch/?datefilter=7%20Days&query=abu&sort=Date'
-    fireFoxOptions = webdriver.FirefoxOptions()
-    fireFoxOptions.set_headless()
+    #Define chrome related parameters
     options = webdriver.ChromeOptions()
     options.binary_location = '/usr/bin/google-chrome-unstable'
-    options.add_argument('headless')#TBD
+    options.add_argument('headless')
     options.add_argument('no-sandbox')
     options.add_argument('disable-gpu')
     options.add_argument('disable-dev-shm-usage')
     options.add_argument('window-size=1200x600')
+    
     folder = "./WashingtonPost"
     timestamp = datetime.datetime.now()
     resultsPath = "./WashingtonPost" + "/" +str(timestamp)

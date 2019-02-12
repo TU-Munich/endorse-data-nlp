@@ -90,7 +90,9 @@ def background_thread():
                 projectID = data['projectID']
                 timestamp = data['timestamp']
                 reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
-                articlePaths = read_all_files(reutersFolderPath)
+                nytFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp))
+                #articlePaths = read_all_files(reutersFolderPath)
+                articlePaths = read_all_files(nytFolderPath)
                 for articlePath in articlePaths:
                     with open(articlePath) as article:
                         data = json.load(article)

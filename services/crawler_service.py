@@ -5,7 +5,7 @@ from services.pipeline_service import handle_crawler_folder
 import logging
 import json
 
-def parse_request(projectID, timestamp,request):
+def parse_request(projectID, timestamp, request):
     query = request['query']
     source = request['source']
     period = request['period']
@@ -16,7 +16,49 @@ def parse_request(projectID, timestamp,request):
         "Bloomberg":"",
         "WP":""
     }
+    if('Reuters' in source):
+        query_url["Reuters"] = parsed_Reuters_query(query, period)
+    elif('New York Times' in source):
+        query_url["NYT"] = parsed_NYT_query(query, period)
     #Since every website have different query format, then it need to customize
+    # #Reuters query
+    # if(period == "Past Day"):
+    #     Reuters_period = "pastDay"
+    # elif(period == "Past Week"):
+    #     Reuters_period = "pastWeek"
+    # else:
+    #     Reuters_period = "pastMonth"        
+
+    # query_url["Reuters"] = 'https://www.reuters.com/search/news?sortBy=date&dateRange='+ Reuters_period +'&blob='+ query
+    # logging.debug("\nquery:%s\n" %query_url["Reuters"])
+    
+    # # Will append other source's schema here
+
+    #Store into .json file for later use
+    data = {
+        'projectID':projectID,
+        'timestamp': str(timestamp),
+        'query_url':query_url
+    }
+    with open("/tmp" + "/project_request.json", "w") as outfile:
+        json.dump(data, outfile)
+
+def parsed_NYT_query(query, period):
+    #New York Times query
+    end_date = datetime.datetime.now().strftime("%Y%m%d")
+    if(period == "Past Day"):
+        start_date = (datetime.datetime.now() + datetime.timedelta(-1)).strftime("%Y%m%d")
+    elif(period == "Past Week"):
+        start_date = (datetime.datetime.now() + datetime.timedelta(-7)).strftime("%Y%m%d")
+    else:
+        start_date = (datetime.datetime.now() + datetime.timedelta(-30)).strftime("%Y%m%d")        
+
+    url = 'https://www.nytimes.com/search?sort=newest&startDate='+ start_date +'&endDate='+ end_date +'&query=' + query
+    logging.debug("\nquery:%s\n" %url)
+
+    return url
+
+def parsed_Reuters_query(query, period):
     #Reuters query
     if(period == "Past Day"):
         Reuters_period = "pastDay"
@@ -25,19 +67,20 @@ def parse_request(projectID, timestamp,request):
     else:
         Reuters_period = "pastMonth"        
 
-    query_url["Reuters"] = 'https://www.reuters.com/search/news?sortBy=date&dateRange='+ Reuters_period +'&blob='+ query
-    logging.debug("\nquery:%s\n" %query_url["Reuters"])
+    url = 'https://www.reuters.com/search/news?sortBy=date&dateRange='+ Reuters_period +'&blob='+ query
+    logging.debug("\nquery:%s\n" %url)
+
+    return url
     
     # Will append other source's schema here
 
     #Store into .json file for later use
-    data = {
-        'projectID':projectID,
-        'timestamp': str(timestamp),
-        'Reuters_query_url':query_url['Reuters']
-    }
-    with open("/tmp" + "/project_request.json", "w") as outfile:
-        json.dump(data, outfile)
+    # data = {
+    #     'projectID':projectID,
+    #     'timestamp': str(timestamp),
+    #     'Reuters_query_url':query_url['Reuters']
+    # }
+
 
 def execute_crawler(request,projectUUID):
     logging.basicConfig(level=logging.DEBUG,  
@@ -50,7 +93,8 @@ def execute_crawler(request,projectUUID):
             os.makedirs(FOLDER + projectUUID)
     timestamp =  datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     REUTERS_Path = "/data/projects/" + projectUUID + "/crawler" + "/Reuters" + "/" + str(timestamp)
-    logging.debug("\nReuters_path:%s\n" %REUTERS_Path)
+    NYT_Path = "/data/projects/" + projectUUID + "/crawler" + "/NYT" + "/" + str(timestamp)
+    #logging.debug("\nReuters_path:%s\n" %REUTERS_Path)
     crawler_folder_path = ('/usr/src/app/crawler')
     
 
@@ -59,6 +103,7 @@ def execute_crawler(request,projectUUID):
     #logging.debug("\nInside the execute crawl funciton parsed_query_url:%s\n" %parsed_query_url["Reuters"])
    
     execute_reuters_crawler_cmd = ('scrapy crawl reutersCrawler')
+    execute_nyt_crawler_cmd = ('scrapy crawl nytCrawler')
     #logging.debug(execute_reuters_crawler_cmd)
     os.chdir(crawler_folder_path)
     #Check which crawler should execute
@@ -66,6 +111,10 @@ def execute_crawler(request,projectUUID):
         os.system(execute_reuters_crawler_cmd)
         #logging.debug("\nRetuers is selected, Reuters_path:%s\n" %REUTERS_Path)
         handle_crawler_folder(projectUUID,REUTERS_Path)
+    if("New York Times" in request['source']):
+        os.system(execute_nyt_crawler_cmd)
+        #logging.debug("\nRetuers is selected, Reuters_path:%s\n" %REUTERS_Path)
+        handle_crawler_folder(projectUUID,NYT_Path)
 
     # Remove the parsed request file
     remove_project_request_file_cmd = ('rm -f /tmp/project_request.json')
