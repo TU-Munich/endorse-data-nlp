@@ -10,7 +10,7 @@ from services.files_service import *
 from services.tika_service import *
 from services.vader_service import *
 from services.elastic_search import es
-from services.similarity.similarity_service import add_sentences_to_index
+from services.similarity.similarity_service import add_sentences_to_index, FaissIndex
 
 
 def handle_crawler_folder(project_uuid, folder_path):
@@ -79,7 +79,7 @@ def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True):
     # create a hashname from the filepath
     id = hashlib.md5(str(file_name).encode("utf8")).hexdigest()
     # run the nlp pipeline on text
-    result = handle_document(id, parsed_doc)
+    result = handle_document(project_uuid, id, parsed_doc)
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
@@ -92,7 +92,7 @@ def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True):
     return
 
 
-def handle_document(id, parsed_document, similarity=False):
+def handle_document(project_uuid, id, parsed_document, similarity=False):
     """
     Take a document and classify the language of the document
     with the google lang classifier
@@ -119,7 +119,10 @@ def handle_document(id, parsed_document, similarity=False):
     result["sentiment"] = sentences_sentiment(result["sentences"])
     # similarity
     if similarity:
-        document_results, document_vector, sentence_results = add_sentences_to_index(id, result["sentences"])
+        # init faiss index
+        DocumentIndex = FaissIndex(project_uuid + "-documents", 1024, create_ind2id=True, create_ind2sent=False)
+        SentenceIndex = FaissIndex(project_uuid + "-sentences", 1024, create_ind2id=True, create_ind2sent=True)
+        document_results, document_vector, sentence_results = add_sentences_to_index(DocumentIndex, SentenceIndex, id, result["sentences"])
         result["similarity_document"] = document_results
         result["similarity_sentences"] = sentence_results
         result["document_vector"] = document_vector.tolist()

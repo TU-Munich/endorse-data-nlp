@@ -12,28 +12,28 @@ from services.pipeline_service import handle_file
 api = Namespace('Crawler', description='All functionalities of the crawler service')
 
 
-@api.route('/project/<string:projectUUID>/crawl', methods=['GET'])
+@api.route('/project/<string:project_uuid>/crawl', methods=['GET'])
 @api.doc('Execute crawling articles')
 @api.response(200, 'Crawling new articles')
 class ExecuteCrawler(Resource):
-    def get(self, projectUUID):
+    def get(self, project_uuid):
         """
         CStart to crawl form selected new websites
-        :param projectUUID:
+        :param project_uuid:
         :return:
         """
         
         #response = {}
         #Verify whether the stored FOLDER_SEARCH is existed
-        # if not os.path.exists(FOLDER_SEARCH + projectUUID):
-        #     os.makedirs(FOLDER_SEARCH + projectUUID)
+        # if not os.path.exists(FOLDER_SEARCH + project_uuid):
+        #     os.makedirs(FOLDER_SEARCH + project_uuid)
         #Save file in destination
         # for file in request.files.getlist('filepond'):
         #     filename = secure_filename(file.filename)
-        #     file_path = os.path.join(FOLDER_SEARCH + projectUUID, filename)
+        #     file_path = os.path.join(FOLDER_SEARCH + project_uuid, filename)
         #     file.save(file_path)
         #     # Start pipeline
-        #     result = handle_file(projectUUID, file_path)
+        #     result = handle_file(project_uuid, file_path)
         #     response = { "name": filename, "result": result }
         #print(request)
         request_body = {
@@ -43,7 +43,7 @@ class ExecuteCrawler(Resource):
         }
         
         
-        execute_crawler(request_body, projectUUID)
+        execute_crawler(request_body, project_uuid)
 
         return {
             'message':'Inside the crawler function',
@@ -55,14 +55,14 @@ class ExecuteCrawler(Resource):
         # return jsonify(response)
 
 
-@api.route('/project/<string:projectUUID>/crawl', methods=['POST'])
+@api.route('/project/<string:project_uuid>/crawl', methods=['POST'])
 @api.doc('Stop crawling')
 @api.response(208, 'Stop crawling')
 class StopCrawler(Resource):
-    def post(self, projectUUID):
+    def post(self, project_uuid):
         """
         Stop crawling process
-        :param projectUUID:
+        :param project_uuid:
         :return:
         """
         stop_crawler()
@@ -71,55 +71,55 @@ class StopCrawler(Resource):
             'message':'Crawler is stopped',
         }, 208
 
-# @api.route('/project/<string:projectUUID>/files', methods=['GET'])
+# @api.route('/project/<string:project_uuid>/files', methods=['GET'])
 # @api.doc('Handle Project Files')
 # class HandleProjectFiles(Resource):
-#     def get(self, projectUUID):
+#     def get(self, project_uuid):
 #         """
 #         Read all files of a project
-#         :param projectUUID:
+#         :param project_uuid:
 #         :return:
 #         """
-#         results = read_all_files(FOLDER_SEARCH + projectUUID)
+#         results = read_all_files(FOLDER_SEARCH + project_uuid)
 #         return results
 
 
-# @api.route('/project/<string:projectUUID>/files/<path:path>', methods=['GET', 'POST'])
+# @api.route('/project/<string:project_uuid>/files/<path:path>', methods=['GET', 'POST'])
 # @api.doc('Handle Project Files')
 # class HandleProjectFile(Resource):
 #     @api.response(200, 'Read files in a directory')
-#     def get(self, projectUUID, path):
+#     def get(self, project_uuid, path):
 #         """
 #         read a specific path of files in the project
-#         :param projectUUID:
+#         :param project_uuid:
 #         :param path:
 #         :return:
 #         """
-#         results = read_all_files(FOLDER_SEARCH + projectUUID + "/" + path)
+#         results = read_all_files(FOLDER_SEARCH + project_uuid + "/" + path)
 #         return results
 
 #     @api.response(204, 'File deleted')
-#     def delete(self, projectUUID, path):
+#     def delete(self, project_uuid, path):
 #         """
 #         Delete a file within a project
-#         :param projectUUID:
+#         :param project_uuid:
 #         :param path:
 #         :return:
 #         """
-#         for hgx in glob.glob(FOLDER_SEARCH + projectUUID + "/" + path):
+#         for hgx in glob.glob(FOLDER_SEARCH + project_uuid + "/" + path):
 #             os.remove(hgx)
 #         return '', 204
 
 
-# @api.route('/project/<string:projectUUID>/files/download/<path:path>', methods=['GET', 'POST'])
+# @api.route('/project/<string:project_uuid>/files/download/<path:path>', methods=['GET', 'POST'])
 # @api.doc('Download Project Files')
 # class DownloadProjectFile(Resource):
 #     @api.response(200, 'Download a file')
-#     def get(self, projectUUID, path):
+#     def get(self, project_uuid, path):
 #         """
 #         Download a specific file
-#         :param projectUUID:
+#         :param project_uuid:
 #         :param path:
 #         :return:
 #         """
-#         return send_file(FOLDER_SEARCH + projectUUID + "/" + path, as_attachment=True)
+#         return send_file(FOLDER_SEARCH + project_uuid + "/" + path, as_attachment=True)

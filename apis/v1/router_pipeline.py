@@ -5,10 +5,10 @@ from config.config import FOLDER
 api = Namespace('Pipeline', description='All functionalities of the project pipeline')
 
 
-@api.route('/project/<string:projectUUID>/pipeline/', methods=['GET'])
+@api.route('/project/<string:project_uuid>/pipeline/', methods=['GET'])
 @api.doc('Pipeline')
 class Pipeline(Resource):
-    def get(self, projectUUID):
-        folder_path = FOLDER + projectUUID
-        handle_folder(projectUUID, folder_path)
+    def get(self, project_uuid):
+        folder_path = FOLDER + project_uuid
+        handle_folder(project_uuid, folder_path)
         return "", 204
