@@ -33,7 +33,7 @@ class FaissIndex():
             print("successfuly loaded ", self.index.ntotal, " entries in " + self.name + " index")
         except:
             print("failed to load  " + self.name + " faiss index")
-            self.index = faiss.IndexFlat(self.dimensions)  # build the index
+            self.index = faiss.IndexFlatL2(self.dimensions)  # build the index
 
         if self.create_ind2id:
             # index to id
@@ -93,8 +93,11 @@ class FaissIndex():
                 "id": id}
 
     def find_similar(self, sentence_vector, k=10, calc_TSNE=True):
+        print("DOC VEC", sentence_vector)
+        print("DOC VEC SHAPE", sentence_vector.shape)
+
         results = []
-        # we want to see 4 nearest neighbors
+        # we want to see nearest neighbors
         D, I = self.index.search(np.array([sentence_vector]), k)
 
         print(D)
@@ -109,7 +112,6 @@ class FaissIndex():
                 res = {}
                 # Add the similarity to the result
                 res["similarity"] = round(D[0][count].item(), 2)
-                res["r"] = min(0.1, 5 - round(D[0][count].item(), 2))
                 # add the sentence to the result if the sentence is stored in the index
                 if self.create_ind2sent:
                     res["sentence"] = self.ind2sent[ind]
@@ -188,8 +190,6 @@ def find_sentences_in_index(SentenceIndex, sentence, k=10):
     return results
 
 
-def find_document_in_index(DocumentIndex, document_uuid, k=10):
-    # TODO Get document and document vector
-    document_vector = None
+def find_document_in_index(DocumentIndex, document_vector, k=10):
     results = DocumentIndex.find_similar(document_vector, k=k)
     return results

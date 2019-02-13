@@ -60,9 +60,6 @@ def get(index, type, id):
     return jsonify(result)
 
 
-init_initial_project()
-
-
 @socketio.on('connect')
 def test_connect():
     logging.debug('Client connected')

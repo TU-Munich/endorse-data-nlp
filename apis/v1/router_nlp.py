@@ -9,7 +9,6 @@ from services.spacy_service import *
 from services.vader_service import *
 from services.elastic_search import es
 
-
 api = Namespace('NLP', description='All functionalities of the natural language processing service')
 
 resource_fields = api.model('NLP Document Request', {
@@ -33,7 +32,8 @@ class Pipeline(Resource):
         req = request.get_json(silent=True)
         # parse arguments
         # create a hashname from the filepath
-        id = hashlib.md5(str(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))).encode("utf8")).hexdigest()
+        id = hashlib.md5(
+            str(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))).encode("utf8")).hexdigest()
 
         debug = request.args.get('debug', default=False)
         document = req['document']  # request.args.get('sentence')

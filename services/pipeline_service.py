@@ -31,13 +31,14 @@ def handle_crawler_file(project_uuid, file_path):
     with open(file_path, 'r') as f:
         loaded_json = json.load(f)
         # run the nlp pipeline on text
-        result = handle_document(project_uuid, id, loaded_json['content'], origin="crawler", similarity=True)
+        result = handle_document(project_uuid, id, loaded_json['content'], origin="crawler", similarity=False)
         # print(result)
 
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
-    result["file_path"] = file_path
+    result["file_path"] = ""
+    result["file_name"] = file_path
     result["project_uuid"] = project_uuid
 
     response = es.index(index="document-index", doc_type="document", id=id, body=result)
@@ -74,18 +75,28 @@ def handle_file(project_uuid, file_path):
     return response
 
 
-def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True, ts=time.time()):
+def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True, ts=time.time(), similarity=False):
     # create a hash name from the filepath
-    id = hashlib.md5(str(file_name).encode("utf8")).hexdigest()
+    hash_filename=file_name+str(ts)
+    id = hashlib.md5(str(hash_filename).encode("utf8")).hexdigest()
     # run the nlp pipeline on text
-    result = handle_document(project_uuid, id, parsed_doc, origin="crawler", similarity=True, ts=ts)
+    result = handle_document(project_uuid, id, parsed_doc, origin="crawler", similarity=similarity, ts=ts)
     # remove content
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
-    result["file_path"] = file_name
+
+    # remove the file path
+    result["file_path"] = ""
+
+    # use only the first 40 chars as title
+    result["file_name"] = file_name
+    if len(file_name) > 60:
+        result["file_name"] = file_name[:60] + "..."
+    # add project uuid
     result["project_uuid"] = project_uuid
+
     if save:
-        es.index(index="document-index", id=id, body=result)
+        es.index(index="document-index", doc_type="document", id=id, body=result)
     else:
         return result
     return
@@ -118,6 +129,7 @@ def handle_document(project_uuid, id, parsed_document, origin="upload", similari
     # sentiment
     result["sentiment"] = sentences_sentiment(result["sentences"])
     # similarity
+    # print("similarity", similarity)
     if similarity:
         # init faiss index
         DocumentIndex = FaissIndex(project_uuid + "-documents", 1024, create_ind2id=True, create_ind2sent=False)
