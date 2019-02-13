@@ -10,7 +10,7 @@ from services.files_service import *
 from services.tika_service import *
 from services.vader_service import *
 from services.elastic_search import es
-from services.similarity.similarity_service import add_sentences_to_index, FaissIndex
+#from services.similarity.similarity_service import add_sentences_to_index, FaissIndex
 
 
 def handle_crawler_folder(project_uuid, folder_path):
@@ -120,13 +120,14 @@ def handle_document(project_uuid, id, parsed_document, origin="upload", similari
     # similarity
     if similarity:
         # init faiss index
-        DocumentIndex = FaissIndex(project_uuid + "-documents", 1024, create_ind2id=True, create_ind2sent=False)
-        SentenceIndex = FaissIndex(project_uuid + "-sentences", 1024, create_ind2id=True, create_ind2sent=True)
-        document_results, document_vector, sentence_results = add_sentences_to_index(DocumentIndex, SentenceIndex, id,
-                                                                                     result["sentences"])
-        result["similarity_document"] = document_results
-        result["similarity_sentences"] = sentence_results
-        result["document_vector"] = document_vector.tolist()
+        pass
+        #DocumentIndex = FaissIndex(project_uuid + "-documents", 1024, create_ind2id=True, create_ind2sent=False)
+        #SentenceIndex = FaissIndex(project_uuid + "-sentences", 1024, create_ind2id=True, create_ind2sent=True)
+        #document_results, document_vector, sentence_results = add_sentences_to_index(DocumentIndex, SentenceIndex, id,
+        #                                                                             result["sentences"])
+        #result["similarity_document"] = document_results
+        #result["similarity_sentences"] = sentence_results
+        #result["document_vector"] = document_vector.tolist()
     # Part of Speech tagging
     result['pos'] = doc_pos(doc)
     # Named entity recognition

@@ -1,7 +1,7 @@
 import hashlib
 import os
 import numpy as np
-import faiss
+#import faiss
 from threading import Thread, Lock
 import json
 from config.config import FOLDER
@@ -29,11 +29,11 @@ class FaissIndex():
         self.create_ind2sent = create_ind2sent
         try:
             print("try to load " + self.name + " faiss index")
-            self.index = faiss.read_index(FOLDER + self.name + '.index')
+            #self.index = faiss.read_index(FOLDER + self.name + '.index')
             print("successfuly loaded ", self.index.ntotal, " entries in " + self.name + " index")
         except:
             print("failed to load  " + self.name + " faiss index")
-            self.index = faiss.IndexFlat(self.dimensions)  # build the index
+            #self.index = faiss.IndexFlat(self.dimensions)  # build the index
 
         if self.create_ind2id:
             # index to id
@@ -74,7 +74,7 @@ class FaissIndex():
         try:
             # add to the faiss index
             self.index.add(np.array([vector]))
-            faiss.write_index(self.index, FOLDER + self.name + ".index")
+            #faiss.write_index(self.index, FOLDER + self.name + ".index")
             print("Amount of elements in the index:", self.index.ntotal)
             # add to the shadow index
             if self.create_ind2id:
