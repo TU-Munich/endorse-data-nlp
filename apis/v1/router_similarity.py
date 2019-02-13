@@ -3,7 +3,7 @@ from flask_restplus import Namespace, Resource, fields
 import numpy as np
 
 from services.elastic_search import es
-from services.similarity.similarity_service import FaissIndex, add_sentences_to_index, find_sentences_in_index, \
+from services.similarity.similarity_service import FaissIndex, enc, add_sentences_to_index, find_sentences_in_index, \
     find_document_in_index
 
 api = Namespace("Similarity API", description="The similarity api endpoints")
@@ -52,7 +52,7 @@ def create_bubble_chart(data):
         res["label"] = label
         # add the data to the array
         # adapt the radius for the charjs
-        d["r"] = (1-d["similarity"]) * 30
+        d["r"] = (1 - d["similarity"]) * 30
         res["data"] = [d]
         res["backgroundColor"] = "#FF6384"
         res["hoverBackgroundColor"] = "#FF6384"
@@ -124,12 +124,43 @@ class Documents(Resource):
         :return:
         """
         # init faiss index
+        print("Document_id:", id)
         DocumentIndex = FaissIndex(project_uuid + "-documents", 1024, create_ind2id=True, create_ind2sent=False)
 
         response = es.get(_source_include=["document_vector"], index="document-index", doc_type="document", id=id)
 
         document_vector = np.asarray((response["_source"]["document_vector"]), dtype=np.float32)
 
+        result = find_document_in_index(DocumentIndex, document_vector)
+
+        show_bubble_chart = request.args.get('chartjs')
+        if bool(show_bubble_chart):
+            result = create_bubble_chart(result)
+
+        return jsonify(result)
+
+
+@api.route("/project/<string:project_uuid>/documents")
+class DocumentFind(Resource):
+    def put(self, project_uuid):
+        """
+        find similar documents
+        :param id:
+        :return:
+        """
+
+        payload = request.get_json(force=True)
+
+        if "sentence" not in payload:
+            return {"msg": "no sentence"}, 400
+
+        # encode sentence from payload
+        document_vector = enc.encode_sentence(payload["sentence"])
+
+        # init faiss index
+        DocumentIndex = FaissIndex(project_uuid + "-documents", 1024, create_ind2id=True, create_ind2sent=False)
+
+        # generate the result
         result = find_document_in_index(DocumentIndex, document_vector)
 
         show_bubble_chart = request.args.get('chartjs')
