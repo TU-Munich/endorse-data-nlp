@@ -11,7 +11,7 @@ class WPSpider(scrapy.Spider):
     base_url = 'https://www.washingtonpost.com/newssearch/?datefilter=7%20Days&query=abu&sort=Date'
     #Define chrome related parameters
     options = webdriver.ChromeOptions()
-    options.binary_location = '/usr/bin/google-chrome-unstable'
+    options.binary_location = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     options.add_argument('headless')
     options.add_argument('no-sandbox')
     options.add_argument('disable-gpu')

@@ -60,8 +60,6 @@ def get(index, type, id):
     return jsonify(result)
 
 
-init_initial_project(es)
-
 @socketio.on('start_crawling')
 def test_connect():
     
@@ -80,29 +78,32 @@ def background_thread():
         length = len(q['quotes'])
     foldersPath = []
     while True:
-
         i = random.randint(0, length-1)
         socketio.emit('server_response', {'data': q['quotes'][i]})
         socketio.sleep(5)
-        if(os.path.exists('/tmp/project_request.json')):
-
+        print("DOES TMP EXISTS?")
+        if(os.path.exists(FOLDER + 'tmp/project_request.json')):
+            print("TMP EXISTS")
             try:
                 # Try to read the project_request file if it existed, or to see whether the folder existed or not
                 article_list = [] #Everytime update a new article_list for clean up records from other project
-                with open('/tmp/project_request.json') as f:
+                with open(FOLDER + 'tmp/project_request.json') as f:
                     data = json.load(f)
+                    print(data)
                 projectID = data['projectID']
                 timestamp = data['timestamp']
                 query_url = data['query_url']
                 if(query_url['Reuters'] !=''):
-                    foldersPath.append(str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp)))
+                    foldersPath.append(FOLDER + str(str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp)))
                 if(query_url['NYT'] !=''):
-                    foldersPath.append(str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp)))
+                    foldersPath.append(FOLDER + str(str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp)))
                 # reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
                 # nytFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp))
                 # articlePaths = read_all_files(reutersFolderPath)
+                print(foldersPath)
                 for folderPath in foldersPath:
                     articlePaths = read_all_files(folderPath)
+                    print(articlePaths)
                     for articlePath in articlePaths:
                         with open(articlePath) as article:
                             data = json.load(article)

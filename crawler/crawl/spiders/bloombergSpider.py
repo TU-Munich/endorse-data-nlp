@@ -13,7 +13,7 @@ class BloombergSpider(scrapy.Spider):
     fireFoxOptions = webdriver.FirefoxOptions()
     fireFoxOptions.set_headless()
     options = webdriver.ChromeOptions()
-    options.binary_location = '/usr/bin/google-chrome-unstable'
+    options.binary_location = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     options.add_argument('headless')#TBD
     options.add_argument('no-sandbox')
     options.add_argument('disable-gpu')

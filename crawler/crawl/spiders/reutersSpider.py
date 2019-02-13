@@ -6,6 +6,7 @@ import time
 import json
 import logging
 
+from config.config import FOLDER
 
 
 class ReutersSpider(scrapy.Spider):
@@ -16,7 +17,7 @@ class ReutersSpider(scrapy.Spider):
 
     #Define chrome related parameters
     options = webdriver.ChromeOptions()
-    options.binary_location = '/usr/bin/google-chrome-unstable'
+    options.binary_location = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     options.add_argument('headless')
     options.add_argument('no-sandbox')
     options.add_argument('disable-gpu')
@@ -28,7 +29,7 @@ class ReutersSpider(scrapy.Spider):
         self.driver = webdriver.Chrome(chrome_options=self.options)
 
         # Get the projectID and parsed request for this spider
-        with open('/tmp/project_request.json') as f:
+        with open(FOLDER + 'tmp/project_request.json') as f:
             data = json.load(f)
         self.projectID = data['projectID']
         self.request_url = data['query_url']['Reuters']
@@ -38,7 +39,7 @@ class ReutersSpider(scrapy.Spider):
         self.logger.info('\ntimestamp= %s\n', self.timestamp)
 
         # Finalize the path for store files
-        self.folder = "/data/projects/"+ self.projectID
+        self.folder = FOLDER + self.projectID
         self.resultsPath = str(str(self.folder) + "/crawler" + "/Reuters" + "/" + self.timestamp)
         self.logger.info('\n Resultpath= %s\n', self.resultsPath)
         
