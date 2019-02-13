@@ -60,9 +60,6 @@ def get(index, type, id):
     return jsonify(result)
 
 
-init_initial_project()
-
-
 @socketio.on('connect')
 def test_connect():
     logging.debug('Client connected')
@@ -122,6 +119,9 @@ def test_disconnect():
     logging.debug('Client disconnected')
 
 
+socketio.run(app, debug=DEBUG, host='0.0.0.0', port=3002)
+
+
 if __name__ == '__main__':
     # Create a new admin if not present
     create_admin = os.environ.get("CREATE_ADMIN", None)
@@ -141,4 +141,3 @@ if __name__ == '__main__':
     if INIT:
         init_initial_project()
 
-    socketio.run(app, debug=DEBUG, host='0.0.0.0', port=3002)
