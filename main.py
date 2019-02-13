@@ -3,7 +3,7 @@ from flask import Flask, Blueprint, url_for, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restplus import Api
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, disconnect
 from threading import Lock
 from config.config import FOLDER
 import random, logging, json
@@ -60,63 +60,63 @@ def get(index, type, id):
     return jsonify(result)
 
 
-@socketio.on('connect')
-def test_connect():
-    logging.debug('Client connected')
-    print('Client connected')
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(target=background_thread)
+init_initial_project(es)
 
+@socketio.on('start_crawling')
+def test_connect():
+    
+    # logging.debug('Client connected')
+    # print('Client connected')
+    # global thread
+    # with thread_lock:
+    #     if thread is None:
+    #         thread = socketio.start_background_task(target=background_thread)
+    socketio.start_background_task(target=background_thread)
 
 def background_thread():
     # What is this quotes file?
     with open(FOLDER + 'quotes.json') as json_data:
         q = json.load(json_data)
         length = len(q['quotes'])
+    foldersPath = []
     while True:
-        socketio.sleep(15)
-        i = random.randint(0, length - 1)
-        socketio.emit('server_response',
-                      {'data': q['quotes'][i]})
-        test_info = {
-            'quote': '***** New Artcile Found! *****',
-            'author': 'System'
-        }
-        try:
-            # Try to read the project_request file if it existed, or to see whether the folder existed or not
-            article_list = []  # Everytime update a new article_list for clean up records from other project
-            with open(FOLDER + 'tmp/project_request.json') as f:
-                data = json.load(f)
-            projectID = data['projectID']
-            timestamp = data['timestamp']
-            reutersFolderPath = str(
-                FOLDER + "/projects/" + str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
-            articlePaths = read_all_files(reutersFolderPath)
-            for articlePath in articlePaths:
-                with open(articlePath) as article:
-                    data = json.load(article)
-                # title = data['title']
-                # source = data['url']
-                # TODO what is this?
-                if 'title' not in article_list:
-                    article_list.append(data)
-                    socketio.emit('server_response', {'data': test_info})
-                    continue
-            socketio.emit('updated_article_list', {'data': article_list})
 
-        except Exception as ee:
-            print(str(ee))
+        i = random.randint(0, length-1)
+        socketio.emit('server_response', {'data': q['quotes'][i]})
+        socketio.sleep(5)
+        if(os.path.exists('/tmp/project_request.json')):
 
+            try:
+                # Try to read the project_request file if it existed, or to see whether the folder existed or not
+                article_list = [] #Everytime update a new article_list for clean up records from other project
+                with open('/tmp/project_request.json') as f:
+                    data = json.load(f)
+                projectID = data['projectID']
+                timestamp = data['timestamp']
+                query_url = data['query_url']
+                if(query_url['Reuters'] !=''):
+                    foldersPath.append(str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp)))
+                if(query_url['NYT'] !=''):
+                    foldersPath.append(str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp)))
+                # reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
+                # nytFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp))
+                # articlePaths = read_all_files(reutersFolderPath)
+                for folderPath in foldersPath:
+                    articlePaths = read_all_files(folderPath)
+                    for articlePath in articlePaths:
+                        with open(articlePath) as article:
+                            data = json.load(article)
+                        article_list.append(data)
+                        continue
+                socketio.emit('updated_article_list',{'data': article_list})
+                socketio.sleep(10)
+            except Exception as ee:
+                print(str(ee))
 
-# def update_progress():
-
-
-
-@socketio.on('disconnect', namespace='/crawl')
-def test_disconnect():
-    logging.debug('Client disconnected')
+@socketio.on('close_crawler')
+def close_crawler():
+    print('close crawler')
+    disconnect()
 
 
 if __name__ == '__main__':

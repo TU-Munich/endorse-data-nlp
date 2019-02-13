@@ -31,7 +31,7 @@ class ReutersSpider(scrapy.Spider):
         with open('/tmp/project_request.json') as f:
             data = json.load(f)
         self.projectID = data['projectID']
-        self.request_url = data['Reuters_query_url']
+        self.request_url = data['query_url']['Reuters']
         self.timestamp = data['timestamp']
         self.logger.info('\nprojectID= %s\n', self.projectID)
         self.logger.info('\nrequest_url= %s\n', self.request_url)
@@ -65,7 +65,7 @@ class ReutersSpider(scrapy.Spider):
             
             article_url = elem.find_element_by_xpath(".//a").get_attribute("href")
         
-            print("Article URL:%s" %article_url)
+            print("Reuters Article URL:%s" %article_url)
             single_article_driver = webdriver.Chrome(chrome_options=self.options)
             single_article_driver.get(article_url)
 
@@ -76,6 +76,7 @@ class ReutersSpider(scrapy.Spider):
                 
                 current_article = {
                     'title':title,
+                    'source': 'Reuters',
                     'url': article_url,
                     'content': content
                     }
