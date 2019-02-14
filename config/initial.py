@@ -28,6 +28,12 @@ def init_initial_project():
     es.index(index="projects-index", doc_type='project', id="seba-master", body=test)
 
     test = {
+        "name": "Lecture",
+        "date": datetime.datetime.now(),
+    }
+    es.index(index="projects-index", doc_type='project', id="lecture", body=test)
+
+    test = {
         "name": "Student Similarity",
         "date": datetime.datetime.now(),
     }

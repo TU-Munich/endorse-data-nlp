@@ -38,7 +38,7 @@ def handle_crawler_file(project_uuid, file_path):
     # its now called input
     # result["_meta"] = parsed_doc["meta"]
     result["file_path"] = ""
-    result["file_name"] = file_path
+    result["file_name"] = os.path.basename(file_path)
     result["project_uuid"] = project_uuid
 
     response = es.index(index="document-index", doc_type="document", id=id, body=result)
@@ -77,7 +77,7 @@ def handle_file(project_uuid, file_path):
 
 def handle_notebook_document(project_uuid, file_name, parsed_doc, save=True, ts=time.time(), similarity=False):
     # create a hash name from the filepath
-    hash_filename=file_name+str(ts)
+    hash_filename = file_name + str(ts)
     id = hashlib.md5(str(hash_filename).encode("utf8")).hexdigest()
     # run the nlp pipeline on text
     result = handle_document(project_uuid, id, parsed_doc, origin="crawler", similarity=similarity, ts=ts)

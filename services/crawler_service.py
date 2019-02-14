@@ -41,7 +41,6 @@ def parse_request(projectID, timestamp, request):
         'query_url':query_url
     }
     with open(FOLDER + "tmp/project_request.json", "w") as outfile:
-        print("WRITE TMP")
         json.dump(data, outfile)
 
 
@@ -67,13 +66,13 @@ def parsed_Reuters_query(query, period):
     elif(period == "Past Week"):
         Reuters_period = "pastWeek"
     else:
-        Reuters_period = "pastMonth"        
+        Reuters_period = "pastMonth"
 
     url = 'https://www.reuters.com/search/news?sortBy=date&dateRange='+ Reuters_period +'&blob='+ query
     logging.debug("\nquery:%s\n" %url)
 
     return url
-    
+
     # Will append other source's schema here
 
     #Store into .json file for later use
@@ -85,12 +84,12 @@ def parsed_Reuters_query(query, period):
 
 
 def execute_crawler(request,project_uuid):
-    logging.basicConfig(level=logging.DEBUG,  
-                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',  
-                    datefmt='%a, %d %b %Y %H:%M:%S',  
-                    filename='/tmp/test.log',  
-                    filemode='w')  
-    
+    logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='/tmp/test.log',
+                    filemode='w')
+
     if not os.path.exists(FOLDER + project_uuid):
             os.makedirs(FOLDER + project_uuid)
     timestamp =  datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
@@ -98,12 +97,12 @@ def execute_crawler(request,project_uuid):
     NYT_Path = FOLDER + project_uuid + "/crawler" + "/NYT" + "/" + str(timestamp)
     logging.debug("\nReuters_path:%s\n" %REUTERS_Path)
     crawler_folder_path = (ROOT_FOLDER + "crawler")
-    
 
-    # Parse the request and store into file for crawler 
+
+    # Parse the request and store into file for crawler
     parse_request(project_uuid, timestamp, request)
     logging.debug("\nInside the execute crawl funciton parsed_query_url:%s\n")
-   
+
     execute_reuters_crawler_cmd = ('scrapy crawl reutersCrawler')
     execute_nyt_crawler_cmd = ('scrapy crawl nytCrawler')
     logging.debug(execute_reuters_crawler_cmd)

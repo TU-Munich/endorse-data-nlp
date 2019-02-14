@@ -13,6 +13,7 @@ from services.elastic_search import es
 from services.files_service import *
 from apis.v1 import blueprint as v1
 import tika
+
 # Start Tika VM
 tika.initVM()
 
@@ -33,6 +34,7 @@ jwt = JWTManager(app)
 cors = CORS(app)
 # Register blueprints
 app.register_blueprint(v1)
+
 socketio = SocketIO(app)
 
 INIT = os.environ.get('INIT', True)
@@ -46,7 +48,6 @@ def serve_dir_directory_index():
 
 @app.route('/<path:path>', methods=['GET'])
 def serve_file_in_dir(path):
-    print(path)
     if not os.path.isfile(os.path.join(static_file_dir, path)):
         return send_from_directory(static_file_dir, 'index.html')
 
@@ -60,64 +61,6 @@ def get(index, type, id):
     return jsonify(result)
 
 
-@socketio.on('start_crawling')
-def test_connect():
-    
-    # logging.debug('Client connected')
-    # print('Client connected')
-    # global thread
-    # with thread_lock:
-    #     if thread is None:
-    #         thread = socketio.start_background_task(target=background_thread)
-    socketio.start_background_task(target=background_thread)
-
-def background_thread():
-    # What is this quotes file?
-    with open(FOLDER + 'quotes.json') as json_data:
-        q = json.load(json_data)
-        length = len(q['quotes'])
-    foldersPath = []
-    while True:
-        i = random.randint(0, length-1)
-        socketio.emit('server_response', {'data': q['quotes'][i]})
-        socketio.sleep(5)
-        print("DOES TMP EXISTS?")
-        if(os.path.exists(FOLDER + 'tmp/project_request.json')):
-            print("TMP EXISTS")
-            try:
-                # Try to read the project_request file if it existed, or to see whether the folder existed or not
-                article_list = [] #Everytime update a new article_list for clean up records from other project
-                with open(FOLDER + 'tmp/project_request.json') as f:
-                    data = json.load(f)
-                    print(data)
-                projectID = data['projectID']
-                timestamp = data['timestamp']
-                query_url = data['query_url']
-                if(query_url['Reuters'] !=''):
-                    foldersPath.append(FOLDER + str(str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp)))
-                if(query_url['NYT'] !=''):
-                    foldersPath.append(FOLDER + str(str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp)))
-                # reutersFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/Reuters" + "/" + str(timestamp))
-                # nytFolderPath = str("/data/projects/"+ str(projectID) + "/crawler" + "/NYT" + "/" + str(timestamp))
-                # articlePaths = read_all_files(reutersFolderPath)
-                print(foldersPath)
-                for folderPath in foldersPath:
-                    articlePaths = read_all_files(folderPath)
-                    print(articlePaths)
-                    for articlePath in articlePaths:
-                        with open(articlePath) as article:
-                            data = json.load(article)
-                        article_list.append(data)
-                        continue
-                socketio.emit('updated_article_list',{'data': article_list})
-                socketio.sleep(10)
-            except Exception as ee:
-                print(str(ee))
-
-@socketio.on('close_crawler')
-def close_crawler():
-    print('close crawler')
-    disconnect()
 
 
 if __name__ == '__main__':
