@@ -1,7 +1,7 @@
 Scrapy==1.5.1
 torch==1.0.0
 elasticsearch==6.3.1
-Flask_Cors==3.0.7
+Flask_Cors==3.0.9
 tika==1.19
 Flask==1.0.2
 faiss==0.1
