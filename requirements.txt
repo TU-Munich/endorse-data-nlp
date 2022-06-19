@@ -8,7 +8,7 @@ faiss==0.1
 Flask_JWT_Extended==3.14.0
 selenium==3.141.0
 Werkzeug==0.15.3
-numpy==1.15.4
+numpy==1.21.0
 langdetect==1.0.7
 Flask_SocketIO==3.1.0
 flask_restplus==0.12.1
